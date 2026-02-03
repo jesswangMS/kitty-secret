@@ -1,0 +1,2850 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🐱 Kitty Secret</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="bg-animation" id="catBackground"></div>
+
+    <!-- Background Music -->
+    <audio id="bgMusic" preload="none">
+        <source src="sounds/background-music.mp3" type="audio/mpeg">
+        <source src="sounds/background-music.wav" type="audio/wav">
+    </audio>
+
+    <div class="card">
+        <button class="sound-btn" onclick="toggleSettings()" id="settingsBtn">⚙️</button>
+
+        <div id="settingsModal" class="modal hidden">
+            <div class="modal-content">
+                <button class="close-modal" onclick="toggleSettings()">✕</button>
+                <h3>⚙️ Settings</h3>
+
+                <div style="text-align: left; padding: 10px 0;">
+                    <!-- Sound Toggle -->
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 0.95em;">
+                            <span>🔊 Sound Effects</span>
+                            <input type="checkbox" id="soundCheckbox" style="width: auto; margin: 0;" onchange="toggleSoundFromSettings()">
+                        </label>
+                        <div style="display: flex; gap: 5px; margin-top: 5px;">
+                            <button onclick="playSound('click')" style="flex: 1; background-color: #48dbfb; font-size: 0.85em;">🔊 Click</button>
+                            <button onclick="playSound('ambientMeow')" style="flex: 1; background-color: #ff9f43; font-size: 0.85em;">🐱 Meow</button>
+                            <button onclick="playSound('ambientBark')" style="flex: 1; background-color: #5f27cd; font-size: 0.85em;">🐶 Bark</button>
+                        </div>
+                    </div>
+
+                    <!-- Music Toggle -->
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 0.95em;">
+                            <span>🎵 Background Music</span>
+                            <input type="checkbox" id="musicCheckbox" style="width: auto; margin: 0;" onchange="toggleMusicFromSettings()">
+                        </label>
+                        <div style="margin-top: 8px;">
+                            <input type="range" id="volumeSlider" min="0" max="100" value="30" style="width: 100%; margin: 0;" oninput="updateMusicVolume(this.value)">
+                            <div style="font-size: 0.75em; color: #636e72; text-align: center; margin-top: 3px;">
+                                Volume: <span id="volumeLabel">30</span>%
+                            </div>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 0.85em;">
+                                <span>🔁 Loop Music</span>
+                                <input type="checkbox" id="loopMusicCheckbox" style="width: auto; margin: 0;" onchange="toggleMusicLoop()">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Hosting Toggle -->
+                    <div id="advancedHostingToggle" class="hidden" style="margin-bottom: 20px;">
+                        <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 0.95em;">
+                            <span>🎯 Advanced Hosting</span>
+                            <input type="checkbox" id="advancedHostingCheckbox" style="width: auto; margin: 0;" onchange="toggleAdvancedHosting()">
+                        </label>
+                        <div style="font-size: 0.75em; color: #636e72; margin-top: 5px; padding-left: 0;">
+                            Enable clue tracking & player calling
+                        </div>
+                    </div>
+
+                    <!-- Difficulty Setting -->
+                    <div id="difficultySettingSelect" class="hidden" style="margin-bottom: 20px;">
+                        <label style="font-size: 0.85em; color: #636e72; font-weight: bold; display: block; margin-bottom: 5px;">DIFFICULTY:</label>
+                        <select id="settingsLibrarySelect" style="margin: 0;"></select>
+                    </div>
+
+                    <hr style="margin: 15px 0;">
+
+                    <!-- Save Button -->
+                    <button onclick="saveRoom()" style="background-color: #1dd1a1; margin: 0 0 10px 0;">💾 Save</button>
+
+                    <!-- Exit Room Confirmation -->
+                    <div id="exitRoomConfirmArea" class="hidden" style="margin-bottom: 15px; padding: 10px; background: #fff5f5; border-radius: 10px; border: 2px solid #ee5a6f;">
+                        <div style="font-size: 0.9em; color: #ee5a6f; margin-bottom: 10px; font-weight: bold;">Are you sure you want to exit?</div>
+                        <button onclick="confirmExitRoom()" style="background-color: #ee5a6f; margin: 5px 0; font-size: 0.9em;">Yes, Exit</button>
+                        <button onclick="cancelExitRoom()" style="background-color: #b2bec3; margin: 5px 0; font-size: 0.9em;">Cancel</button>
+                    </div>
+
+                    <!-- Exit Room Button -->
+                    <button onclick="showExitConfirm()" id="exitRoomBtn" style="background-color: #ee5a6f; margin: 0;">Exit Room</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="infoModal" class="modal hidden">
+            <div class="modal-content">
+                <button class="close-modal" onclick="toggleInfo()">✕</button>
+                <h3>How to Play 🐾</h3>
+                
+                <div style="font-size: 0.85em; line-height: 1.4; color: #2d3436;">
+                    <p><b>1. Clues:</b> Every round, each player gives <b>one</b> word clue about their secret. Don't say the actual word!</p>
+                    <p><b>2. Vote:</b> After a round of clues, vote to kick out one player.</p>
+                    <p><b>3. Game End:</b> Play until the Dog and Confused Kitty are found, or only 2 players remain.</p>
+                    
+                    <hr>
+                    
+                    <b>ROLES</b>
+                    <ul style="padding-left: 15px; margin: 5px 0;">
+                        <li><b>Good Kitty 🐱:</b> Share the same word. Give vague clues.</li>
+                        <li><b>Confused Kitty ❓:</b> Different word. Try to survive!</li>
+                        <li><b>Spy Dog 🐶:</b> No word. Blend in and guess the secret.</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <b>WINS</b>
+                    <ul style="padding-left: 15px; margin: 5px 0;">
+                        <li><b>Good Kitties:</b> Find the Dog and Confused Kitty.</li>
+                        <li><b>Spy Dog:</b> Guesses the true secret word correctly.</li>
+                        <li><b>Confused Kitty:</b> Becomes the last player standing.</li>
+                    </ul>
+                </div>
+
+                <button onclick="toggleInfo()" style="background-color: #5f27cd;">Got it!</button>
+            </div>
+        </div>
+
+        <h1>🐱 Kitty Secret</h1>
+
+        <button class="tutorial-btn" onclick="startTutorial()">📚 Tutorial</button>
+
+        <div id="eliminationModal" class="modal hidden">
+            <div class="modal-content" style="max-width: 350px; text-align: center;">
+                <h3 style="color: #ee5a6f; font-size: 1.8em; margin-bottom: 10px;">💀 ELIMINATED</h3>
+                <div id="eliminatedPlayerName" style="font-size: 1.5em; font-weight: bold; margin: 15px 0;"></div>
+                <div id="eliminatedPlayerRole" style="font-size: 1.2em; margin: 10px 0;"></div>
+                <div id="eliminationVotes" style="font-size: 0.95em; color: #636e72; margin: 10px 0;"></div>
+                <button onclick="closeEliminationModal()" style="background-color: #ee5a6f; margin-top: 15px;">Continue</button>
+            </div>
+        </div>
+
+        <div id="spyDogGuessModal" class="modal hidden">
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <h3 style="color: #ff9f43; font-size: 1.6em; margin-bottom: 10px;">🐶 Spy Dog's Last Chance!</h3>
+                <p style="font-size: 0.95em; color: #636e72; margin: 15px 0;">
+                    <b><span id="spyDogName"></span></b> was eliminated!<br>
+                    Guess the Good Kitty word to win!
+                </p>
+                <input type="text" id="spyDogGuessInput" placeholder="Enter your guess..." style="font-size: 1.1em; text-align: center; margin: 10px 0;">
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button onclick="submitSpyDogGuess()" style="background-color: #ff9f43; flex: 1;">Submit Guess</button>
+                    <button onclick="skipSpyDogGuess()" style="background-color: #b2bec3; flex: 1;">Skip</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="hostTakeoverModal" class="modal hidden">
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <h3 style="color: #5f27cd; font-size: 1.6em; margin-bottom: 10px;">👑 Take Over as Host?</h3>
+                <p style="font-size: 1em; color: #636e72; margin: 20px 0;">
+                    You are about to become the host of this room.<br>
+                    All other players will be notified.
+                </p>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="confirmHostTakeover()" style="flex: 1; background-color: #5f27cd;">Accept</button>
+                    <button onclick="cancelHostTakeover()" style="flex: 1; background-color: #b2bec3;">Abort</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="restartRoundModal" class="modal hidden">
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <h3 style="color: #ee5a6f; font-size: 1.6em; margin-bottom: 10px;">🔄 Restart Round?</h3>
+                <p style="font-size: 1em; color: #636e72; margin: 20px 0;">
+                    This will reset the calling process for this round.<br>
+                    All players will need to be called again.
+                </p>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="confirmRestartRound()" style="flex: 1; background-color: #ee5a6f;">Restart</button>
+                    <button onclick="cancelRestartRound()" style="flex: 1; background-color: #b2bec3;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="lockVotesModal" class="modal hidden">
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <h3 style="color: #ff9f43; font-size: 1.6em; margin-bottom: 10px;">🔒 Lock Votes?</h3>
+                <p style="font-size: 1em; color: #636e72; margin: 20px 0;">
+                    Not all players have voted yet.<br>
+                    <span id="votesCountText" style="font-weight: bold;"></span>
+                </p>
+                <div id="missingVotersDiv" style="background: #fff3cd; padding: 12px; border-radius: 10px; margin: 15px 0; border: 2px solid #ff9f43;">
+                    <div style="font-size: 0.85em; color: #856404; font-weight: bold; margin-bottom: 8px;">Waiting for:</div>
+                    <div id="missingVotersList" style="font-size: 0.95em; color: #636e72;"></div>
+                </div>
+                <p style="font-size: 0.9em; color: #999; margin: 10px 0;">
+                    Lock votes anyway?
+                </p>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="confirmLockVotes()" style="flex: 1; background-color: #ff9f43;">Lock Votes</button>
+                    <button onclick="cancelLockVotes()" style="flex: 1; background-color: #b2bec3;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="skipPlayerModal" class="modal hidden">
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <h3 style="color: #ff9f43; font-size: 1.6em; margin-bottom: 10px;">⏭️ Skip Player?</h3>
+                <p style="font-size: 1em; color: #636e72; margin: 20px 0;">
+                    Skip <span id="skipPlayerName" style="font-weight: bold; color: #ff9f43;"></span>?<br>
+                    <span style="font-size: 0.9em; color: #999;">They won't be able to give a clue this round.</span>
+                </p>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="confirmSkipPlayer()" style="flex: 1; background-color: #ff9f43;">Skip</button>
+                    <button onclick="cancelSkipPlayer()" style="flex: 1; background-color: #b2bec3;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="gameEndModal" class="modal hidden">
+            <div class="modal-content" style="max-width: 400px;">
+                <h3 style="color: #1dd1a1;">🎮 Game Summary</h3>
+                <div id="gameSummaryContent"></div>
+                <button onclick="closeGameEndModal()" style="background-color: #1dd1a1; margin-top: 15px;">Continue</button>
+            </div>
+        </div>
+
+        <div id="tutorialModal" class="modal hidden">
+            <div class="modal-content tutorial-content">
+                <button class="close-modal" onclick="closeTutorial()">✕</button>
+
+                <div id="tutorialStep1" class="tutorial-step">
+                    <h3>🎮 Welcome to Kitty Secret!</h3>
+                    <p>A social deduction game where you give clues about your secret word to find the imposters!</p>
+                    <div class="tutorial-image">🐱🐱🐱🐶❓</div>
+                    <p><b>Goal:</b> Good Kitties must find the Spy Dog 🐶 and Confused Kitty ❓</p>
+                    <button onclick="nextTutorialStep(2)">Next →</button>
+                </div>
+
+                <div id="tutorialStep2" class="tutorial-step hidden">
+                    <h3>🎭 Roles Explained</h3>
+                    <div style="text-align: left; margin: 10px 0;">
+                        <p><b>🐱 Good Kitty:</b> You share the same word with other Good Kitties. Example: <span style="background: #fffde7; padding: 2px 8px; border-radius: 5px;">#5 Coffee</span></p>
+                        <p><b>❓ Confused Kitty:</b> You have a DIFFERENT but similar word. Example: <span style="background: #ffebe7; padding: 2px 8px; border-radius: 5px;">#5 Tea</span></p>
+                        <p><b>🐶 Spy Dog:</b> You have NO word! Your job is to blend in and guess the secret.</p>
+                    </div>
+                    <button onclick="nextTutorialStep(1)">← Back</button>
+                    <button onclick="nextTutorialStep(3)">Next →</button>
+                </div>
+
+                <div id="tutorialStep3" class="tutorial-step hidden">
+                    <h3>💬 Giving Clues</h3>
+                    <p>Each round, everyone gives ONE word clue about their secret.</p>
+                    <div class="tutorial-example">
+                        <p><b>If your word is "Coffee":</b></p>
+                        <p>✅ Good clues: "Morning", "Hot", "Drink"</p>
+                        <p>❌ Bad clues: "Coffee" (you can't say the word!), "Starbucks" (too specific!)</p>
+                    </div>
+                    <p><b>Tip:</b> Be vague enough to not reveal, but clear enough to show you know the word!</p>
+                    <button onclick="nextTutorialStep(2)">← Back</button>
+                    <button onclick="nextTutorialStep(4)">Next →</button>
+                </div>
+
+                <div id="tutorialStep4" class="tutorial-step hidden">
+                    <h3>🗳️ Voting & Winning</h3>
+                    <div style="text-align: left; margin: 10px 0;">
+                        <p><b>After each round:</b> Players discuss and vote to eliminate one player.</p>
+                        <p><b>🐱 Good Kitties Win:</b> Find and eliminate the Spy Dog AND Confused Kitty</p>
+                        <p><b>🐶 Spy Dog Wins:</b> Correctly guesses the Good Kitty word</p>
+                        <p><b>❓ Confused Kitty Wins:</b> Survives until only 2 players remain</p>
+                    </div>
+                    <button onclick="nextTutorialStep(3)">← Back</button>
+                    <button onclick="nextTutorialStep(5)">Next →</button>
+                </div>
+
+                <div id="tutorialStep5" class="tutorial-step hidden">
+                    <h3>🎯 Practice Example</h3>
+                    <div class="tutorial-practice">
+                        <p>You are a <b>Good Kitty</b> 🐱</p>
+                        <p>Your word is: <span style="background: #fffde7; padding: 5px 15px; border-radius: 10px; font-size: 1.2em; font-weight: bold;">#3 Pizza</span></p>
+                        <p><b>What clue would you give?</b></p>
+                        <div style="margin: 15px 0;">
+                            <button onclick="tutorialAnswer('italian')" style="background: #48dbfb; font-size: 14px;">Italian</button>
+                            <button onclick="tutorialAnswer('cheese')" style="background: #48dbfb; font-size: 14px;">Cheese</button>
+                            <button onclick="tutorialAnswer('pizzahut')" style="background: #48dbfb; font-size: 14px;">PizzaHut</button>
+                        </div>
+                        <div id="tutorialFeedback" class="hidden" style="padding: 10px; border-radius: 10px; margin-top: 10px;"></div>
+                    </div>
+                    <button onclick="nextTutorialStep(4)">← Back</button>
+                    <button onclick="closeTutorial()" style="background-color: #1dd1a1;">Start Playing! 🎮</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="status-area" class="hidden">
+            <div id="info-label">Room: <span id="displayRoom">0000</span> | Players: <span id="playerCount">0</span></div>
+            <div id="playerList"></div>
+            <hr>
+        </div>
+
+        <div id="setup-screen">
+            <input type="text" id="playerName" placeholder="Your Name">
+            <input type="number" id="roomCode" placeholder="Room Number">
+            <button onclick="joinLobby()">Join Lobby</button>
+            <div id="savedRoomInfo" class="hidden" style="margin-top: 15px; padding: 10px; background: #e8f8f5; border-radius: 10px;">
+                <div style="font-size: 0.85em; color: #1dd1a1; font-weight: bold; margin-bottom: 5px;">💾 Saved Room</div>
+                <div style="font-size: 0.9em; color: #636e72;" id="savedRoomDetails"></div>
+                <button onclick="loadSavedRoom()" style="background-color: #1dd1a1; margin-top: 5px; font-size: 0.9em;">Load Saved Room</button>
+            </div>
+        </div>
+
+        <div id="lobby-screen" class="hidden">
+            <button onclick="startGame()" style="background-color: #48dbfb;">Start Game</button>
+            <span id="lobby-wait-msg" class="host-waiting-msg hidden">Waiting for host to start...</span>
+            <button onclick="deleteRoom()" style="background-color: #2d3436; font-size: 0.8em;">🗑️ Delete Room</button>
+        </div>
+
+        <div id="reveal-screen" class="hidden">
+            <h2 id="playerGreeting">Hello!</h2>
+            <div id="callingStatus" class="hidden" style="margin: 10px 0; padding: 12px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; font-size: 1em; font-weight: bold; color: #856404;"></div>
+            <div id="secretWordDisplay" style="visibility: hidden;">???</div>
+            <button id="revealBtn" onmousedown="showSecret()" onmouseup="hideSecret()" ontouchstart="showSecret()" ontouchend="hideSecret()"
+                    style="background-color: #5f27cd; height: 100px; font-size: 18px;">HOLD TO REVEAL</button>
+
+            <div id="trueSecretDisplay" class="hidden" style="margin-top: 15px; padding: 15px; background: #fffde7; border: 2px solid #ff9f43; border-radius: 10px;">
+                <div style="font-size: 0.9em; color: #636e72; margin-bottom: 5px;">Good Kitty Word:</div>
+                <div id="trueSecretWord" style="font-size: 1.3em; font-weight: bold; color: #ff9f43;"></div>
+            </div>
+            <hr>
+
+            <div id="clueInputArea" class="hidden" style="margin-top: 15px;">
+                <hr>
+                <label style="font-size: 0.9em; color: #636e72; font-weight: bold;">💬 ROUND <span id="currentRoundLabel">1</span> CLUE:</label>
+                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                    <input type="text" id="clueInput" placeholder="Type your one-word clue..." style="flex: 1;">
+                    <button onclick="submitClue()" id="submitClueBtn" style="width: auto; padding: 12px 20px; background-color: #1dd1a1; transition: all 0.3s;">Submit</button>
+                </div>
+                <div id="clueStatus" style="font-size: 0.8em; color: #1dd1a1; margin-top: 5px;"></div>
+            </div>
+
+            <div id="callingArea" class="hidden" style="margin-top: 15px;">
+                <hr>
+                <label style="font-size: 0.9em; color: #636e72; font-weight: bold;">🎯 HOST TOOLS:</label>
+                <div id="currentPlayerCalling" style="margin: 10px 0; padding: 10px; background: #e3f2fd; border-radius: 8px; font-size: 0.95em;"></div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button onclick="startCallingPlayers()" id="startCallingBtn" style="flex: 1; background-color: #48dbfb;">▶️ Start Calling</button>
+                    <button onclick="skipPlayerCall()" id="skipCallingBtn" class="hidden" style="flex: 1; background-color: #ff9f43;">⏭️ Skip</button>
+                    <button onclick="requestRestartRound()" id="restartRoundBtn" class="hidden" style="flex: 1; background-color: #ee5a6f;">🔄 Restart Round</button>
+                </div>
+            </div>
+
+            <div id="votingArea" class="hidden" style="margin-top: 15px;">
+                <hr>
+                <label style="font-size: 0.9em; color: #ee5a6f; font-weight: bold;">🗳️ VOTE TO ELIMINATE:</label>
+                <div id="voteButtons" style="margin-top: 10px;"></div>
+                <div id="selectedVote" class="hidden" style="margin-top: 10px; padding: 10px; background: #fff5f5; border: 2px solid #ff6b6b; border-radius: 10px;">
+                    <div style="font-size: 0.85em; margin-bottom: 5px;">Selected: <b id="selectedPlayerName"></b></div>
+                    <button onclick="confirmVote()" style="background-color: #ee5a6f; font-size: 0.9em;">✓ Confirm Vote</button>
+                    <button onclick="cancelVoteSelection()" style="background-color: #b2bec3; font-size: 0.9em;">Cancel</button>
+                </div>
+                <div id="voteStatus" style="font-size: 0.8em; color: #ee5a6f; margin-top: 5px;"></div>
+            </div>
+
+            <div id="hostControls" class="hidden" style="margin-top: 10px;">
+                <button onclick="startVoting()" id="startVotingBtn" style="background-color: #ee5a6f; transition: all 0.3s;" disabled>Start Voting</button>
+                <button onclick="nextRound()" id="nextRoundBtn" class="hidden" style="background-color: #48dbfb;">🔒 Lock Votes</button>
+                <button onclick="requestHostTakeover()" id="takeOverHostBtn" class="hidden" style="background-color: #5f27cd;">👑 Take Over as Host</button>
+                <button onclick="nextGame()" id="nextGameBtn" style="background-color: #1dd1a1;">Next Game</button>
+            </div>
+            <span id="reveal-wait-msg" class="host-waiting-msg hidden">Waiting for host...</span>
+        </div>
+    </div>
+
+    
+
+    <script src="words.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const supabaseUrl = 'https://cqszzglxhpkoiltqbaet.supabase.co';
+        const supabaseKey = 'sb_publishable_OxFBuSsITEfw3Mswar8-7w_yUIRX4NS';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let players = [];
+        let dbRevealedList = [];
+        let myName = "";
+        let currentRoomCode = null;
+        let currentHost = null;
+        let mySecret = "";
+        let localTrueSecret = null;
+        let playedIndices = [];
+        let channel = null;
+        let clueHistoryEnabled = false;
+        let allClues = []; // [[round1 clues], [round2 clues], ...] where each round is [{name, clue}, ...]
+        let currentRound = 1;
+        let myClueSubmitted = false;
+        let votingActive = false;
+        let votes = []; // [{voter: "Player1", votedFor: "Player2"}, ...]
+        let myVoteSubmitted = false;
+        let eliminatedPlayers = [];
+        let allVotesInNotified = false;
+        let selectedVoteTarget = null; // Temporary selection before confirmation
+        let playerRoles = {}; // Store player roles {playerName: role}
+        let gameWinners = []; // Track multiple winners {player: string, reason: string}
+        let advancedHostingEnabled = false;
+        let callingOrder = [];
+        let calledPlayers = [];
+        let skippedPlayers = [];
+        let currentCallingIndex = 0;
+        let callingActive = false;
+        let lastHostChangeNotification = null;
+        let lastCalledPlayer = null; // Track last player being called to avoid playing sound multiple times
+
+        // Sound system
+        let soundEnabled = localStorage.getItem('soundEnabled') !== 'false'; // Default to true
+        let audioContext = null;
+        let ambientSoundTimer = null;
+
+        // Music system
+        let musicEnabled = localStorage.getItem('musicEnabled') !== 'false'; // Default to true
+        let musicVolume = parseInt(localStorage.getItem('musicVolume') || '30');
+        let musicLoop = localStorage.getItem('musicLoop') === 'true'; // Default to false (play once)
+        let bgMusicElement = null;
+
+        // Initialize audio context on first user interaction
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            // Resume context if suspended (required by some browsers)
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudioContext();
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            // Different sounds for different actions
+            switch(type) {
+                case 'meow': // Word reveal
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.15);
+                    break;
+
+                case 'newRound': // New round starts - excited meow
+                    // First meow
+                    oscillator.frequency.setValueAtTime(900, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.08);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.12);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.12);
+
+                    // Second meow (higher pitch)
+                    setTimeout(() => {
+                        if (!soundEnabled) return;
+                        const osc2 = audioContext.createOscillator();
+                        const gain2 = audioContext.createGain();
+                        osc2.connect(gain2);
+                        gain2.connect(audioContext.destination);
+                        osc2.frequency.setValueAtTime(1000, audioContext.currentTime);
+                        osc2.frequency.exponentialRampToValueAtTime(500, audioContext.currentTime + 0.1);
+                        gain2.gain.setValueAtTime(0.35, audioContext.currentTime);
+                        gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                        osc2.start(audioContext.currentTime);
+                        osc2.stop(audioContext.currentTime + 0.15);
+                    }, 150);
+                    break;
+
+                case 'click': // Button click
+                    oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.05);
+                    break;
+
+                case 'join': // Player joins
+                    oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+
+                case 'called': // You are being called - notification sound
+                    // Triple beep notification
+                    for (let i = 0; i < 3; i++) {
+                        setTimeout(() => {
+                            if (!soundEnabled) return;
+                            const beepOsc = audioContext.createOscillator();
+                            const beepGain = audioContext.createGain();
+                            beepOsc.connect(beepGain);
+                            beepGain.connect(audioContext.destination);
+                            beepOsc.frequency.setValueAtTime(800, audioContext.currentTime);
+                            beepGain.gain.setValueAtTime(0.25, audioContext.currentTime);
+                            beepGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                            beepOsc.start(audioContext.currentTime);
+                            beepOsc.stop(audioContext.currentTime + 0.1);
+                        }, i * 150);
+                    }
+                    break;
+
+                case 'ambientMeow': // Random ambient cat sounds from files
+                    const meowFiles = ['sounds/meow1.mp3', 'sounds/meow2.mp3', 'sounds/meow3.mp3'];
+                    const randomMeow = meowFiles[Math.floor(Math.random() * meowFiles.length)];
+                    playAudioFile(randomMeow, 0.3); // 30% volume
+                    return; // Exit early since we're using audio files
+
+                case 'ambientBark': // Random ambient dog sounds from files
+                    const barkFiles = ['sounds/bark1.mp3', 'sounds/bark2.mp3'];
+                    const randomBark = barkFiles[Math.floor(Math.random() * barkFiles.length)];
+                    playAudioFile(randomBark, 0.3); // 30% volume
+                    return; // Exit early since we're using audio files
+            }
+        }
+
+        // Helper function to play audio files
+        function playAudioFile(filename, volume = 0.5) {
+            if (!soundEnabled) return;
+
+            const audio = new Audio(filename);
+            audio.volume = volume;
+
+            audio.play().catch(err => {
+                console.log(`Could not play ${filename}:`, err.message);
+                console.log('Make sure the audio file exists in the same folder as index.html');
+            });
+        }
+
+        // Ambient sound system - random meows and barks
+        function scheduleNextAmbientSound() {
+            // Clear any existing timer
+            if (ambientSoundTimer) {
+                clearTimeout(ambientSoundTimer);
+            }
+
+            // Random delay between 10-30 seconds
+            const delay = (Math.random() * 20 + 10) * 1000; // 10000-30000ms
+
+            console.log(`Next ambient sound scheduled in ${Math.round(delay/1000)} seconds`);
+
+            ambientSoundTimer = setTimeout(() => {
+                if (soundEnabled) {
+                    // Randomly choose meow or bark (70% meow, 30% bark since it's Kitty Secret!)
+                    const soundType = Math.random() < 0.7 ? 'ambientMeow' : 'ambientBark';
+                    console.log(`Playing ambient sound: ${soundType}`);
+                    playSound(soundType);
+                } else {
+                    console.log('Ambient sound skipped - sound disabled');
+                }
+                // Schedule the next one
+                scheduleNextAmbientSound();
+            }, delay);
+        }
+
+        function startAmbientSounds() {
+            console.log('Starting ambient sound system');
+            scheduleNextAmbientSound();
+        }
+
+        function stopAmbientSounds() {
+            if (ambientSoundTimer) {
+                clearTimeout(ambientSoundTimer);
+                ambientSoundTimer = null;
+            }
+        }
+
+        function toggleSettings() {
+            playSound('click');
+            document.getElementById('settingsModal').classList.toggle('hidden');
+        }
+
+        function toggleSoundFromSettings() {
+            soundEnabled = document.getElementById('soundCheckbox').checked;
+            localStorage.setItem('soundEnabled', soundEnabled);
+
+            // Play a sound to confirm
+            if (soundEnabled) {
+                playSound('click');
+                // Restart ambient sounds if enabling
+                if (!ambientSoundTimer) {
+                    startAmbientSounds();
+                }
+            } else {
+                // Stop ambient sounds if disabling
+                stopAmbientSounds();
+            }
+        }
+
+        // Initialize sound checkbox state
+        function initSoundCheckbox() {
+            const checkbox = document.getElementById('soundCheckbox');
+            checkbox.checked = soundEnabled;
+        }
+
+        // Initialize music system
+        function initMusicSystem() {
+            bgMusicElement = document.getElementById('bgMusic');
+            if (bgMusicElement) {
+                bgMusicElement.volume = musicVolume / 100;
+                bgMusicElement.loop = musicLoop; // Apply loop setting
+
+                // Suppress error messages if file doesn't exist
+                bgMusicElement.onerror = () => {
+                    console.log('Background music file not found - add background-music.mp3 or background-music.wav to enable music');
+                };
+
+                const musicCheckbox = document.getElementById('musicCheckbox');
+                const loopCheckbox = document.getElementById('loopMusicCheckbox');
+                const volumeSlider = document.getElementById('volumeSlider');
+                const volumeLabel = document.getElementById('volumeLabel');
+
+                if (musicCheckbox) musicCheckbox.checked = musicEnabled;
+                if (loopCheckbox) loopCheckbox.checked = musicLoop;
+                if (volumeSlider) volumeSlider.value = musicVolume;
+                if (volumeLabel) volumeLabel.innerText = musicVolume;
+
+                // Try to play music if enabled
+                if (musicEnabled) {
+                    playBackgroundMusic();
+                }
+            }
+        }
+
+        function playBackgroundMusic() {
+            if (bgMusicElement && musicEnabled) {
+                bgMusicElement.play().catch(err => {
+                    console.log('Music autoplay prevented:', err);
+                    // Browsers often block autoplay - user needs to interact first
+                });
+            }
+        }
+
+        function stopBackgroundMusic() {
+            if (bgMusicElement) {
+                bgMusicElement.pause();
+                bgMusicElement.currentTime = 0;
+            }
+        }
+
+        function toggleMusicFromSettings() {
+            musicEnabled = document.getElementById('musicCheckbox').checked;
+            localStorage.setItem('musicEnabled', musicEnabled);
+
+            if (musicEnabled) {
+                playBackgroundMusic();
+                playSound('click');
+            } else {
+                stopBackgroundMusic();
+            }
+        }
+
+        function updateMusicVolume(value) {
+            musicVolume = parseInt(value);
+            localStorage.setItem('musicVolume', musicVolume);
+            document.getElementById('volumeLabel').innerText = musicVolume;
+
+            if (bgMusicElement) {
+                bgMusicElement.volume = musicVolume / 100;
+            }
+        }
+
+        function toggleMusicLoop() {
+            musicLoop = document.getElementById('loopMusicCheckbox').checked;
+            localStorage.setItem('musicLoop', musicLoop);
+
+            if (bgMusicElement) {
+                bgMusicElement.loop = musicLoop;
+            }
+
+            playSound('click');
+        }
+
+        window.onload = () => {
+            initSoundCheckbox();
+            initMusicSystem();
+            const settingsSelect = document.getElementById('settingsLibrarySelect');
+
+            // Set advanced hosting default to ON
+            advancedHostingEnabled = true;
+            const advancedCheckbox = document.getElementById('advancedHostingCheckbox');
+            if (advancedCheckbox) advancedCheckbox.checked = true;
+
+            if (typeof LIBRARIES !== 'undefined') {
+                Object.keys(LIBRARIES).forEach(key => {
+                    let opt = document.createElement('option');
+                    opt.value = key; opt.innerHTML = key;
+                    settingsSelect.appendChild(opt);
+                });
+            }
+
+            // Add change listener to settings library select
+            settingsSelect.addEventListener('change', () => {
+                if (confirm('Change difficulty? This will reset played words.')) {
+                    playedIndices = [];
+                    playSound('click');
+                } else {
+                    // Revert selection - keep current difficulty
+                    const currentDifficulty = settingsSelect.getAttribute('data-current');
+                    if (currentDifficulty) {
+                        settingsSelect.value = currentDifficulty;
+                    }
+                }
+            });
+
+            // Check for saved room
+            checkSavedRoom();
+        };
+
+        function checkSavedRoom() {
+            const savedRoom = localStorage.getItem('kittySecretRoom');
+            if (savedRoom) {
+                try {
+                    const roomData = JSON.parse(savedRoom);
+                    document.getElementById('savedRoomDetails').innerText = `Room: ${roomData.roomCode} | Player: ${roomData.playerName}`;
+                    document.getElementById('savedRoomInfo').classList.remove('hidden');
+                } catch (e) {
+                    localStorage.removeItem('kittySecretRoom');
+                }
+            }
+        }
+
+        function saveRoom() {
+            playSound('click');
+            if (!currentRoomCode || !myName) {
+                alert('No active room to save!');
+                return;
+            }
+
+            const roomData = {
+                roomCode: currentRoomCode,
+                playerName: myName
+            };
+
+            localStorage.setItem('kittySecretRoom', JSON.stringify(roomData));
+
+            // Close settings window after saving
+            toggleSettings();
+        }
+
+        function loadSavedRoom() {
+            playSound('click');
+            const savedRoom = localStorage.getItem('kittySecretRoom');
+            if (savedRoom) {
+                try {
+                    const roomData = JSON.parse(savedRoom);
+                    document.getElementById('playerName').value = roomData.playerName;
+                    document.getElementById('roomCode').value = roomData.roomCode;
+                } catch (e) {
+                    alert('Failed to load saved room');
+                }
+            }
+        }
+
+        let flipTimeouts = {};
+
+        function flipPlayerCard(playerName) {
+            playSound('click');
+
+            // Find the card element
+            const cards = document.querySelectorAll('.player-card');
+            let targetCard = null;
+
+            cards.forEach(card => {
+                const frontText = card.querySelector('.player-card-front .player-tag');
+                if (frontText && frontText.textContent.includes(playerName)) {
+                    targetCard = card;
+                }
+            });
+
+            if (!targetCard) return;
+
+            // Clear any existing timeout for this card
+            if (flipTimeouts[playerName]) {
+                clearTimeout(flipTimeouts[playerName]);
+                delete flipTimeouts[playerName];
+            }
+
+            // Toggle flip state
+            const isFlipped = targetCard.classList.contains('flipped');
+
+            if (isFlipped) {
+                // If already flipped, flip back immediately
+                targetCard.classList.remove('flipped');
+            } else {
+                // If not flipped, flip to show clues
+                targetCard.classList.add('flipped');
+
+                // Auto flip back after 3 seconds if not clicked again
+                flipTimeouts[playerName] = setTimeout(() => {
+                    targetCard.classList.remove('flipped');
+                    delete flipTimeouts[playerName];
+                }, 3000);
+            }
+        }
+
+        async function joinLobby() {
+            const nameIn = document.getElementById('playerName').value.trim();
+            const roomIn = parseInt(document.getElementById('roomCode').value.trim());
+            if (!nameIn || isNaN(roomIn)) return alert("Enter info!");
+            myName = nameIn;
+            currentRoomCode = roomIn;
+
+            // Initialize audio context on user interaction
+            initAudioContext();
+
+            // Try to start background music if enabled
+            playBackgroundMusic();
+
+            // Start ambient sound effects
+            startAmbientSounds();
+
+            let { data: roomData, error: selectError } = await supabaseClient.from('rooms').select('*').eq('room_code', currentRoomCode).maybeSingle();
+            console.log('Room check:', { roomData, selectError });
+
+            if (!roomData) {
+                const { data: insertData, error: insertError } = await supabaseClient.from('rooms').insert([{
+                    room_code: currentRoomCode,
+                    game_state: 'waiting',
+                    players: [],
+                    current_host: myName,
+                    revealed_players: [],
+                    advanced_hosting_enabled: true,
+                    all_clues: [],
+                    calling_order: [],
+                    called_players: [],
+                    skipped_players: [],
+                    current_calling_index: 0,
+                    calling_active: false,
+                    current_round: 1,
+                    voting_active: false,
+                    votes: [],
+                    eliminated_players: [],
+                    show_game_summary: false
+                }]).select();
+                console.log('Room insert:', { insertData, insertError });
+
+                if (insertError) {
+                    alert('Failed to create room: ' + insertError.message);
+                    console.error('Insert error:', insertError);
+                    return;
+                }
+            }
+
+            playSound('join');
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('status-area').classList.remove('hidden');
+            document.getElementById('lobby-screen').classList.remove('hidden');
+            document.getElementById('displayRoom').innerText = currentRoomCode;
+
+            // Fetch current room state first, then subscribe
+            await loadCurrentRoomState(currentRoomCode);
+            subscribeToRoom(currentRoomCode);
+        }
+
+        async function loadCurrentRoomState(roomCode) {
+            const { data: roomData, error } = await supabaseClient
+                .from('rooms')
+                .select('*')
+                .eq('room_code', roomCode)
+                .maybeSingle();
+
+            if (error) {
+                console.error('Failed to load room state:', error);
+                return;
+            }
+
+            if (roomData) {
+                console.log('Loading initial room state:', roomData);
+                handleUpdate(roomData);
+            }
+        }
+
+        async function toggleAdvancedHosting() {
+            if (currentHost !== myName) return;
+            advancedHostingEnabled = document.getElementById('advancedHostingCheckbox').checked;
+            playSound('click');
+
+            if (currentRoomCode) {
+                await supabaseClient.from('rooms').update({
+                    advanced_hosting_enabled: advancedHostingEnabled,
+                    all_clues: [],
+                    calling_order: [],
+                    called_players: [],
+                    skipped_players: [],
+                    current_calling_index: 0,
+                    calling_active: false
+                }).eq('room_code', currentRoomCode);
+            }
+        }
+
+        function subscribeToRoom(roomCode) {
+            channel = supabaseClient.channel(`room-${roomCode}`, { config: { presence: { key: myName } } });
+            channel
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `room_code=eq.${Number(roomCode)}` },
+                (payload) => payload.eventType === 'DELETE' ? location.reload() : handleUpdate(payload.new))
+                .on('presence', { event: 'sync' }, async () => {
+                    const state = channel.presenceState();
+                    const newPlayers = Object.keys(state).sort();
+
+                    console.log('Presence sync:', {
+                        oldPlayers: players,
+                        newPlayers: newPlayers,
+                        presenceState: state
+                    });
+
+                    players = newPlayers;
+
+                    // --- AUTO-DELETE LOGIC ---
+                    // If no one is left in the presence state, delete the room from the DB
+                    if (players.length === 0) {
+                        console.warn('No players in presence - room may need cleanup');
+                        // Don't delete immediately - might be temporary disconnect
+                        return;
+                    }
+
+                    updatePlayerDisplay();
+
+                    // Host syncs the player list to the DB
+                    if (currentHost === myName) {
+                        console.log('I am host, syncing players to DB:', players);
+                        syncPlayersToDatabase(players);
+                    }
+                })
+                .subscribe(async (status) => {
+                    console.log('Channel subscription status:', status);
+                    if (status === 'SUBSCRIBED') {
+                        await channel.track({ online_at: new Date().toISOString() });
+                        console.log('Tracking presence as:', myName);
+                    }
+                });
+        }
+
+        function updatePlayerDisplay() {
+            console.log('updatePlayerDisplay called - players:', players, 'length:', players.length);
+
+            // Show total player count (including eliminated)
+            document.getElementById('playerCount').innerText = players.length;
+
+            // Safety check - if no players, something is wrong
+            if (players.length === 0) {
+                console.error('No players in list! Presence may not be synced.');
+                return;
+            }
+
+            // Check if player has submitted clue for current round
+            const currentRoundClues = allClues[currentRound - 1] || [];
+
+            // Update start voting button state (host only)
+            const startVotingBtn = document.getElementById('startVotingBtn');
+            if (startVotingBtn && currentHost === myName) {
+                // If advanced hosting is OFF, button is always active
+                // If advanced hosting is ON, button is active when all players called or skipped (don't wait for clues)
+                let buttonEnabled = true;
+
+                if (advancedHostingEnabled && !votingActive) {
+                    const activeNonEliminatedPlayers = players.filter(p => !eliminatedPlayers.includes(p));
+
+                    // Check calling - all non-eliminated should be called or skipped
+                    const allCalled = activeNonEliminatedPlayers.every(p =>
+                        calledPlayers.includes(p) || skippedPlayers.includes(p)
+                    );
+
+                    buttonEnabled = allCalled;
+
+                    console.log('Start Voting button state:', {
+                        activeNonEliminatedPlayers,
+                        allCalled,
+                        buttonEnabled,
+                        calledPlayers,
+                        skippedPlayers
+                    });
+                }
+
+                startVotingBtn.disabled = !buttonEnabled;
+                if (buttonEnabled) {
+                    startVotingBtn.style.backgroundColor = '#ee5a6f';
+                    startVotingBtn.style.opacity = '1';
+                    startVotingBtn.style.cursor = 'pointer';
+                    startVotingBtn.style.animation = 'pulse 2s ease-in-out infinite';
+                } else {
+                    startVotingBtn.style.backgroundColor = '#b2bec3';
+                    startVotingBtn.style.opacity = '0.6';
+                    startVotingBtn.style.cursor = 'not-allowed';
+                    startVotingBtn.style.animation = '';
+                }
+            }
+
+            // Reset lastCalledPlayer when calling is not active
+            if (!callingActive) {
+                lastCalledPlayer = null;
+            }
+
+            // Update calling display
+            updateCallingDisplay();
+
+            const div = document.getElementById('playerList');
+            // Show ALL players, including eliminated ones
+            div.innerHTML = players.map(p => {
+                const isMe = p === myName ? "border-color:#ff6b6b;" : "";
+                const isEliminated = eliminatedPlayers.includes(p);
+                const hasRevealed = dbRevealedList.includes(p) ? "revealed-tag" : "";
+                const icon = dbRevealedList.includes(p) ? "👁️ " : "";
+                const leaderIcon = p === currentHost ? "👑 " : "";
+
+                // Check if this player has submitted a clue for current round
+                const hasSubmittedClue = currentRoundClues.find(c => c.name === p);
+                const clueSubmittedClass = (hasSubmittedClue && !votingActive && advancedHostingEnabled) ? "clue-submitted" : "";
+
+                // Add strikethrough style for eliminated players
+                const eliminatedStyle = isEliminated ? "text-decoration: line-through; opacity: 0.6;" : "";
+
+                // Get role emoji for eliminated players (show after name)
+                const playerRole = playerRoles[p] || '';
+                let roleEmoji = '';
+                if (isEliminated && playerRole) {
+                    if (playerRole.includes('Good Kitty')) roleEmoji = ' 🐱';
+                    else if (playerRole.includes('Confused')) roleEmoji = ' ❓';
+                    else if (playerRole.includes('Spy Dog')) roleEmoji = ' 🐶';
+                }
+
+                // Get all clues for this player across all rounds
+                const playerCluesArray = allClues.map((roundClues, idx) => {
+                    const clue = roundClues.find(c => c.name === p);
+                    return clue ? `<div style="font-size: 10px; margin: 2px 0;">R${idx + 1}: "${clue.clue}"</div>` : '';
+                }).filter(c => c !== '');
+
+                const hasClues = playerCluesArray.length > 0;
+                const cluesBackContent = playerCluesArray.length > 0
+                    ? playerCluesArray.join('')
+                    : '<div style="font-size: 10px; color: #999;">No clues yet</div>';
+
+                // Show vote count as a badge (during voting)
+                const voteCount = votes.filter(v => v.votedFor === p).length;
+                const voteBadge = (votingActive && voteCount > 0)
+                    ? `<span class="vote-badge">${voteCount}</span>`
+                    : '';
+
+                // Escape player name for onclick
+                const escapedName = p.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                return `<div class="player-container">
+                    <div class="player-card ${hasClues ? 'clickable' : ''}" onclick="${hasClues ? `flipPlayerCard('${escapedName}')` : ''}">
+                        <div class="player-card-inner">
+                            <div class="player-card-front">
+                                <span class="player-tag ${hasRevealed} ${clueSubmittedClass}" style="position: relative; ${isMe}${eliminatedStyle}">
+                                    ${leaderIcon}${icon}${p}${roleEmoji}${voteBadge}
+                                </span>
+                            </div>
+                            <div class="player-card-back">
+                                <div class="player-clues-container">
+                                    <div style="font-weight: bold; font-size: 11px; margin-bottom: 5px; color: #5f27cd;">${p}'s Clues:</div>
+                                    ${cluesBackContent}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            const isLeader = (currentHost === myName);
+            const startBtn = document.querySelector('#lobby-screen button[onclick="startGame()"]');
+            const delBtn = document.querySelector('button[onclick="deleteRoom()"]');
+            const advancedHostingToggle = document.getElementById('advancedHostingToggle');
+            const difficultySettingSelect = document.getElementById('difficultySettingSelect');
+            const nextRoundBtn = document.getElementById('nextRoundBtn');
+
+            if (startBtn) startBtn.classList.toggle('hidden', !isLeader);
+            if (delBtn) delBtn.classList.toggle('hidden', !isLeader);
+            if (advancedHostingToggle) advancedHostingToggle.classList.toggle('hidden', !isLeader);
+            if (difficultySettingSelect) difficultySettingSelect.classList.toggle('hidden', !isLeader);
+
+            // Show/hide voting buttons based on state (reuse startVotingBtn from above)
+            // Keep Start Voting visible but change its state when voting active
+            if (startVotingBtn) {
+                if (isLeader) {
+                    startVotingBtn.classList.remove('hidden');
+                    if (votingActive) {
+                        startVotingBtn.innerText = '🗳️ Voting in Progress...';
+                        startVotingBtn.disabled = true;
+                        startVotingBtn.style.backgroundColor = '#b2bec3';
+                        startVotingBtn.style.animation = '';
+                    } else {
+                        startVotingBtn.innerText = 'Start Voting';
+                        // Enabled state handled by updatePlayerDisplay()
+                    }
+                } else {
+                    startVotingBtn.classList.add('hidden');
+                }
+            }
+            if (nextRoundBtn) {
+                nextRoundBtn.classList.toggle('hidden', !votingActive || !isLeader);
+                // Disable Lock Votes button when voting just started (no votes yet)
+                if (votingActive && votes.length === 0) {
+                    nextRoundBtn.disabled = true;
+                    nextRoundBtn.style.backgroundColor = '#b2bec3';
+                    nextRoundBtn.style.opacity = '0.6';
+                    nextRoundBtn.style.cursor = 'not-allowed';
+                    nextRoundBtn.style.animation = '';
+                } else if (votingActive) {
+                    nextRoundBtn.disabled = false;
+                    nextRoundBtn.style.backgroundColor = '#48dbfb';
+                    nextRoundBtn.style.opacity = '1';
+                    nextRoundBtn.style.cursor = 'pointer';
+                }
+            }
+
+            document.getElementById('lobby-wait-msg').classList.toggle('hidden', isLeader);
+            document.getElementById('reveal-wait-msg').classList.toggle('hidden', isLeader);
+        }
+
+       async function startGame() {
+            if (currentHost !== myName) return;
+            const pCount = players.length;
+            if (pCount < 2) return alert("Need 2+ players!");
+
+            // Get library from settings
+            const settingsSelect = document.getElementById('settingsLibrarySelect');
+            const selectedLibrary = settingsSelect.value;
+
+            // Store current difficulty for revert functionality
+            settingsSelect.setAttribute('data-current', selectedLibrary);
+
+            const currentLib = LIBRARIES[selectedLibrary];
+            const available = currentLib.filter(t => !playedIndices.includes(t.index));
+
+            if (available.length === 0) {
+                alert("Pack finished! Resetting...");
+                playedIndices = []; return startGame();
+            }
+
+            // RANDOMIZER stays the same
+            const selTheme = available[Math.floor(Math.random() * available.length)];
+            playedIndices.push(selTheme.index);
+            const roundNum = playedIndices.length; // Still used for internal sync tracking
+
+            console.log('Starting round:', {
+                roundNum,
+                playedIndices: [...playedIndices],
+                selectedWord: selTheme
+            });
+
+            let roles = [];
+            if (pCount <= 4) {
+                roles = ["Confused Kitty"];
+            } else if (pCount <= 6) {
+                roles = ["Confused Kitty", "Spy Dog"];
+            } else if (pCount <= 8) {
+                // 7 or 8 players
+                roles = ["Confused Kitty", "Confused Kitty", "Spy Dog"];
+            } else {
+                // 9 or more players
+                roles = ["Confused Kitty", "Confused Kitty", "Spy Dog", "Spy Dog"];
+            }
+            while (roles.length < pCount) roles.push("Good Kitty");
+            roles.sort(() => Math.random() - 0.5);
+
+            const packages = players.map((name, i) => {
+                let word, role;
+                if (roles[i] === "Spy Dog") {
+                    word = "SPY DOG";
+                    role = "Spy Dog 🐶";
+                } else if (roles[i] === "Confused Kitty") {
+                    word = `#${selTheme.index} ${selTheme.confused}`;
+                    role = "Confused Kitty ❓";
+                } else {
+                    word = `#${selTheme.index} ${selTheme.good}`;
+                    role = "Good Kitty 🐱";
+                }
+                return { name, secret: word, role };
+            });
+
+            const updatePayload = {
+                game_state: 'playing',
+                secret_data: packages,
+                revealed_players: [],
+                all_clues: [], // Clear all clues for new game
+                current_round: 1, // Reset to round 1
+                voting_active: false,
+                votes: [], // Clear all votes
+                eliminated_players: [], // Clear eliminated players
+                last_elimination: null, // Clear last elimination result
+                show_game_summary: false, // Clear summary flag
+                calling_order: [], // Clear calling order
+                called_players: [], // Clear called players
+                skipped_players: [], // Clear skipped players
+                current_calling_index: 0,
+                calling_active: false,
+                true_secret: {
+                    goodWord: `#${selTheme.index} ${selTheme.good}`,
+                    round: roundNum
+                }
+            };
+
+            console.log('Updating database with:', updatePayload);
+
+            const { data: updateData, error: updateError } = await supabaseClient.from('rooms').update(updatePayload).eq('room_code', Number(currentRoomCode)).select();
+
+            console.log('Start game update result:', { updateData, updateError, sentRound: roundNum });
+
+            if (updateError) {
+                alert('Failed to start game: ' + updateError.message);
+                console.error('Update error:', updateError);
+            }
+        }
+
+        async function submitClue() {
+            const clueInput = document.getElementById('clueInput');
+            const submitBtn = document.getElementById('submitClueBtn');
+            const clueText = clueInput.value.trim();
+
+            if (!clueText) {
+                alert('Please enter a clue!');
+                return;
+            }
+
+            // Check if it's a single word (allow hyphens for words like "ice-cream")
+            if (clueText.split(/\s+/).length > 1) {
+                alert('Please enter only ONE word as your clue!');
+                return;
+            }
+
+            playSound('click');
+
+            // Update clues for current round
+            const updatedAllClues = [...allClues];
+
+            // Ensure the array has enough rounds
+            while (updatedAllClues.length < currentRound) {
+                updatedAllClues.push([]);
+            }
+
+            // Get current round's clues (0-indexed)
+            const currentRoundClues = updatedAllClues[currentRound - 1] || [];
+
+            // Remove existing clue from this player and add new one
+            const filteredClues = currentRoundClues.filter(c => c.name !== myName);
+            filteredClues.push({ name: myName, clue: clueText });
+
+            updatedAllClues[currentRound - 1] = filteredClues;
+
+            // If advanced hosting is enabled, also auto-advance to next player
+            let updatePayload = { all_clues: updatedAllClues };
+
+            if (advancedHostingEnabled && callingActive) {
+                // Mark current player as called and advance to next
+                const updatedCalledPlayers = [...calledPlayers];
+                if (!updatedCalledPlayers.includes(myName)) {
+                    updatedCalledPlayers.push(myName);
+                }
+
+                const nextIndex = (currentCallingIndex + 1) % callingOrder.length;
+                updatePayload.called_players = updatedCalledPlayers;
+                updatePayload.current_calling_index = nextIndex;
+            }
+
+            const { error } = await supabaseClient.from('rooms').update(updatePayload).eq('room_code', currentRoomCode);
+
+            if (error) {
+                alert('Failed to submit clue: ' + error.message);
+                console.error('Submit clue error:', error);
+            } else {
+                myClueSubmitted = true;
+                document.getElementById('clueStatus').innerText = '✓ Clue submitted!';
+                clueInput.disabled = true;
+
+                // Grey out submit button
+                submitBtn.disabled = true;
+                submitBtn.style.backgroundColor = '#b2bec3';
+                submitBtn.style.opacity = '0.6';
+                submitBtn.style.cursor = 'not-allowed';
+            }
+        }
+
+        function handleUpdate(roomData) {
+            if (!roomData) return;
+
+            console.log('HandleUpdate received:', {
+                myName,
+                votingActive: roomData.voting_active,
+                votes: roomData.votes,
+                currentRound: roomData.current_round,
+                eliminatedPlayers: roomData.eliminated_players,
+                dbPlayers: roomData.players
+            });
+
+            // Fallback: If presence hasn't synced yet, use database players
+            if (players.length === 0 && roomData.players && roomData.players.length > 0) {
+                console.log('Using database players (presence syncing...)');
+                players = roomData.players;
+            }
+
+            // Update current host from database
+            currentHost = roomData.current_host || null;
+
+            dbRevealedList = roomData.revealed_players || [];
+            advancedHostingEnabled = roomData.advanced_hosting_enabled || false;
+            allClues = roomData.all_clues || [];
+            currentRound = roomData.current_round || 1;
+            votingActive = roomData.voting_active || false;
+            votes = roomData.votes || [];
+            eliminatedPlayers = roomData.eliminated_players || [];
+
+            // Handle calling arrays - parse if string, use if array
+            callingOrder = Array.isArray(roomData.calling_order) ? roomData.calling_order :
+                          (typeof roomData.calling_order === 'string' ? [] : roomData.calling_order || []);
+            calledPlayers = Array.isArray(roomData.called_players) ? roomData.called_players :
+                           (typeof roomData.called_players === 'string' ? [] : roomData.called_players || []);
+            skippedPlayers = Array.isArray(roomData.skipped_players) ? roomData.skipped_players :
+                            (typeof roomData.skipped_players === 'string' ? [] : roomData.skipped_players || []);
+
+            currentCallingIndex = roomData.current_calling_index || 0;
+            callingActive = roomData.calling_active || false;
+
+            // Check for host change notification (only show once per timestamp)
+            if (roomData.host_change_notification &&
+                roomData.host_change_notification.timestamp !== lastHostChangeNotification) {
+                lastHostChangeNotification = roomData.host_change_notification.timestamp;
+                const newHostName = roomData.host_change_notification.newHost;
+
+                // Show notification to all players except the new host
+                if (newHostName !== myName) {
+                    playSound('meow');
+                    if (navigator.vibrate) navigator.vibrate(200);
+                    alert(`👑 ${newHostName} is now the host!`);
+                }
+            }
+
+            // Update checkbox state
+            const checkbox = document.getElementById('advancedHostingCheckbox');
+            if (checkbox) checkbox.checked = advancedHostingEnabled;
+
+            // Update round label
+            const roundLabel = document.getElementById('currentRoundLabel');
+            if (roundLabel) roundLabel.innerText = currentRound;
+
+            // Show elimination modal if available and not yet shown
+            if (roomData.last_elimination && !roomData.last_elimination.shown) {
+                showEliminationModal(roomData.last_elimination);
+            }
+
+            // Show game summary if host triggered it
+            if (roomData.show_game_summary && roomData.secret_data && roomData.true_secret) {
+                const modal = document.getElementById('gameEndModal');
+                if (modal.classList.contains('hidden')) {
+                    showGameSummary(roomData.secret_data, roomData.true_secret);
+                }
+            }
+
+            updatePlayerDisplay();
+
+            if (roomData.game_state === 'playing') {
+                const isFirstGame = localTrueSecret === null;
+                const isNewGame = localTrueSecret !== null && localTrueSecret.round !== roomData.true_secret.round;
+                const shouldNotifyNewGame = isFirstGame || isNewGame;
+
+                console.log('Game check:', {
+                    playerName: myName,
+                    isFirstGame,
+                    isNewGame,
+                    shouldNotifyNewGame,
+                    oldTrueSecret: localTrueSecret,
+                    newTrueSecret: roomData.true_secret,
+                    oldGameNum: localTrueSecret?.round,
+                    newGameNum: roomData.true_secret?.round
+                });
+
+                // Store all player roles for display
+                if (roomData.secret_data) {
+                    playerRoles = {};
+                    roomData.secret_data.forEach(p => {
+                        playerRoles[p.name] = p.role;
+                    });
+                }
+
+                const myPack = roomData.secret_data.find(p => p.name === myName);
+                if (myPack) {
+                    mySecret = myPack.secret;
+
+                    // Update localTrueSecret AFTER checking
+                    localTrueSecret = roomData.true_secret;
+
+                    if (shouldNotifyNewGame) {
+                        setTimeout(() => {
+                            playSound('newRound');
+                            if (navigator.vibrate) navigator.vibrate(200);
+                            alert(`Game ${localTrueSecret.round} starting!`);
+                            document.getElementById('trueSecretDisplay').classList.add('hidden');
+                            document.getElementById('secretWordDisplay').style.visibility = 'hidden';
+                        }, 100);
+                    }
+                } else {
+                    // Late joiner - set a placeholder
+                    mySecret = "Joined late - wait for next round";
+                    localTrueSecret = roomData.true_secret;
+                }
+
+                // Reset clue submission when not voting and haven't submitted for current round
+                if (!votingActive) {
+                    const currentRoundClues = allClues[currentRound - 1] || [];
+                    const hasSubmittedThisRound = currentRoundClues.find(c => c.name === myName);
+
+                    if (!hasSubmittedThisRound) {
+                        myClueSubmitted = false;
+                        const clueInput = document.getElementById('clueInput');
+                        const submitBtn = document.getElementById('submitClueBtn');
+                        if (clueInput) clueInput.value = '';
+                        if (clueInput) clueInput.disabled = false;
+                        document.getElementById('clueStatus').innerText = '';
+
+                        // Reset submit button
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.style.backgroundColor = '#1dd1a1';
+                            submitBtn.style.opacity = '1';
+                            submitBtn.style.cursor = 'pointer';
+                        }
+                    }
+                }
+
+                // Always check and update vote submission state based on database
+                const hasVoted = votes.find(v => v.voter === myName);
+
+                if (votingActive) {
+                    myVoteSubmitted = !!hasVoted;
+
+                    // If we haven't voted yet, make sure UI is ready for voting
+                    if (!hasVoted) {
+                        selectedVoteTarget = null;
+                        document.getElementById('selectedVote').classList.add('hidden');
+                        document.getElementById('voteStatus').innerText = '';
+                    } else {
+                        // Show confirmed status if we've voted
+                        document.getElementById('voteStatus').innerText = `✓ Vote confirmed!`;
+                    }
+                } else {
+                    // Reset when voting ends
+                    myVoteSubmitted = false;
+                    selectedVoteTarget = null;
+                    document.getElementById('selectedVote').classList.add('hidden');
+                    document.getElementById('voteStatus').innerText = '';
+                }
+
+                // Check if this player is eliminated
+                const isEliminated = eliminatedPlayers.includes(myName);
+
+                // Handle clue input area - always show section
+                const currentRoundClues = allClues[currentRound - 1] || [];
+                const wasSkipped = skippedPlayers.includes(myName);
+                const showClueInput = !votingActive && !isEliminated && !wasSkipped && myPack; // Only show if player has a pack
+
+                document.getElementById('clueInputArea').classList.toggle('hidden', !showClueInput);
+
+                // Control input/submit functionality based on advanced hosting
+                const myClue = currentRoundClues.find(c => c.name === myName);
+                const clueInput = document.getElementById('clueInput');
+                const submitBtn = document.getElementById('submitClueBtn');
+                const clueStatus = document.getElementById('clueStatus');
+
+                if (clueInput && clueStatus && submitBtn) {
+                    if (myClue) {
+                        // Player already submitted - show submitted clue
+                        clueInput.value = myClue.clue;
+                        clueInput.disabled = true;
+                        clueStatus.innerText = '✓ Clue submitted!';
+                        clueStatus.style.color = '#1dd1a1';
+                        myClueSubmitted = true;
+
+                        submitBtn.disabled = true;
+                        submitBtn.style.backgroundColor = '#b2bec3';
+                        submitBtn.style.opacity = '0.6';
+                        submitBtn.style.cursor = 'not-allowed';
+                    } else if (advancedHostingEnabled) {
+                        // Advanced hosting ON - only allow typing and submit when being called
+                        const currentPlayerBeingCalled = callingOrder[currentCallingIndex];
+                        const isBeingCalled = callingActive && currentPlayerBeingCalled === myName;
+
+                        // Check if all players have been called (emergency fallback)
+                        const activeNonEliminatedPlayers = players.filter(p => !eliminatedPlayers.includes(p));
+                        const allPlayersCalledOrSkipped = callingActive && activeNonEliminatedPlayers.length > 0 &&
+                            activeNonEliminatedPlayers.every(p => calledPlayers.includes(p) || skippedPlayers.includes(p));
+
+                        if (isBeingCalled || allPlayersCalledOrSkipped) {
+                            // Being called OR all calling complete - enable input and submit
+                            clueInput.disabled = false;
+                            clueInput.placeholder = "Type your one-word clue...";
+
+                            if (allPlayersCalledOrSkipped && !isBeingCalled) {
+                                clueStatus.innerText = 'All players called - submit your clue now';
+                                clueStatus.style.color = '#ff9f43';
+                            } else {
+                                clueStatus.innerText = '';
+                            }
+
+                            submitBtn.disabled = false;
+                            submitBtn.style.backgroundColor = '#1dd1a1';
+                            submitBtn.style.opacity = '1';
+                            submitBtn.style.cursor = 'pointer';
+                        } else {
+                            // Not being called yet - disable input and submit
+                            clueInput.disabled = true;
+                            clueInput.value = '';
+                            clueInput.placeholder = "Wait for your turn...";
+
+                            if (!callingActive) {
+                                clueStatus.innerText = 'Waiting for host to start calling...';
+                            } else {
+                                clueStatus.innerText = 'Wait for your turn to be called';
+                            }
+                            clueStatus.style.color = '#636e72';
+
+                            submitBtn.disabled = true;
+                            submitBtn.style.backgroundColor = '#b2bec3';
+                            submitBtn.style.opacity = '0.6';
+                            submitBtn.style.cursor = 'not-allowed';
+                        }
+                    } else {
+                        // Advanced hosting OFF - always allow submit
+                        clueInput.disabled = false;
+                        clueInput.placeholder = "Type your one-word clue...";
+                        clueInput.value = '';
+                        clueStatus.innerText = '';
+
+                        submitBtn.disabled = false;
+                        submitBtn.style.backgroundColor = '#1dd1a1';
+                        submitBtn.style.opacity = '1';
+                        submitBtn.style.cursor = 'pointer';
+                    }
+                }
+
+                // Handle voting area (always available when voting is active, regardless of clue history setting)
+                const showVoting = votingActive && !isEliminated && myPack; // Only allow voting if player has a pack
+                const votingArea = document.getElementById('votingArea');
+                votingArea.classList.toggle('hidden', !showVoting);
+
+                // Visual guides: animate voting area when visible, remove animation from reveal button
+                const revealBtn = document.getElementById('revealBtn');
+                if (votingActive && showVoting) {
+                    // Voting active - animate voting section, de-emphasize reveal button
+                    votingArea.style.animation = 'pulse 2s ease-in-out infinite';
+                    if (revealBtn) revealBtn.style.animation = '';
+                } else {
+                    // Not voting - remove animation from voting, allow reveal button to be normal
+                    votingArea.style.animation = '';
+                    if (revealBtn) revealBtn.style.animation = '';
+                }
+
+                if (votingActive) {
+                    const myVote = votes.find(v => v.voter === myName);
+                    if (myVote && !myVoteSubmitted) {
+                        myVoteSubmitted = true;
+                    }
+                    updateVoteButtons();
+                }
+
+                // Show true secret word if player is eliminated
+                if (isEliminated && localTrueSecret) {
+                    document.getElementById('trueSecretWord').innerText = localTrueSecret.goodWord;
+                    document.getElementById('trueSecretDisplay').classList.remove('hidden');
+                } else {
+                    document.getElementById('trueSecretDisplay').classList.add('hidden');
+                }
+
+                // Show host controls (now visible to everyone)
+                const isLeader = (currentHost === myName);
+                const hostControls = document.getElementById('hostControls');
+
+                // Show hostControls section if playing
+                if (hostControls) {
+                    hostControls.classList.remove('hidden');
+                }
+
+                // Show/hide individual host buttons
+                const startVotingBtn = document.getElementById('startVotingBtn');
+                const nextRoundBtn = document.getElementById('nextRoundBtn');
+                const takeOverBtn = document.getElementById('takeOverHostBtn');
+                const nextGameBtn = document.getElementById('nextGameBtn');
+
+                if (startVotingBtn) startVotingBtn.classList.toggle('hidden', !isLeader);
+                if (nextRoundBtn) nextRoundBtn.classList.toggle('hidden', !votingActive || !isLeader);
+                if (nextGameBtn) nextGameBtn.classList.toggle('hidden', !isLeader);
+                if (takeOverBtn) takeOverBtn.classList.toggle('hidden', isLeader); // Show to non-hosts only
+
+                // Handle calling area (host only, advanced hosting enabled)
+                const showCallingArea = advancedHostingEnabled && isLeader && !votingActive && !isEliminated;
+
+                console.log('Calling Area Debug:', {
+                    isLeader,
+                    advancedHostingEnabled,
+                    votingActive,
+                    isEliminated,
+                    showCallingArea,
+                    myName,
+                    players,
+                    firstPlayer: players[0]
+                });
+
+                document.getElementById('callingArea').classList.toggle('hidden', !showCallingArea);
+
+                // Always switch to game screen when game_state is 'playing'
+                document.getElementById('playerGreeting').innerText = "Hello, " + myName + "!";
+                document.getElementById('lobby-screen').classList.add('hidden');
+                document.getElementById('reveal-screen').classList.remove('hidden');
+            } else {
+                document.getElementById('lobby-screen').classList.remove('hidden');
+                document.getElementById('reveal-screen').classList.add('hidden');
+            }
+        }
+
+        function toggleInfo() {
+            document.getElementById('infoModal').classList.toggle('hidden');
+        }
+
+        function startTutorial() {
+            playSound('click');
+            document.getElementById('tutorialModal').classList.remove('hidden');
+            // Reset to first step
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`tutorialStep${i}`).classList.add('hidden');
+            }
+            document.getElementById('tutorialStep1').classList.remove('hidden');
+            document.getElementById('tutorialFeedback').classList.add('hidden');
+        }
+
+        function closeTutorial() {
+            playSound('click');
+            document.getElementById('tutorialModal').classList.add('hidden');
+        }
+
+        function nextTutorialStep(step) {
+            playSound('click');
+            // Hide all steps
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`tutorialStep${i}`).classList.add('hidden');
+            }
+            // Show target step
+            document.getElementById(`tutorialStep${step}`).classList.remove('hidden');
+        }
+
+        function tutorialAnswer(answer) {
+            playSound('click');
+            const feedback = document.getElementById('tutorialFeedback');
+            feedback.classList.remove('hidden');
+
+            if (answer === 'italian') {
+                feedback.style.background = '#1dd1a1';
+                feedback.style.color = 'white';
+                feedback.innerHTML = '✅ Perfect! "Italian" is a great clue - specific enough to hint at pizza without being too obvious!';
+            } else if (answer === 'cheese') {
+                feedback.style.background = '#48dbfb';
+                feedback.style.color = 'white';
+                feedback.innerHTML = '👍 Good! "Cheese" works fine since there will be multiple rounds. Not too specific, not too vague!';
+            } else if (answer === 'pizzahut') {
+                feedback.style.background = '#ee5a6f';
+                feedback.style.color = 'white';
+                feedback.innerHTML = '❌ Bad - the word cannot be in your clue! "Pizza" is literally in "PizzaHut"!';
+            }
+        }
+
+        async function syncPlayersToDatabase(list) {
+            if (currentRoomCode) await supabaseClient.from('rooms').update({ players: list }).eq('room_code', currentRoomCode);
+        }
+
+        function requestHostTakeover() {
+            playSound('click');
+
+            // Check if already host
+            if (currentHost === myName) {
+                alert('You are already the host!');
+                return;
+            }
+
+            // Show confirmation modal
+            document.getElementById('hostTakeoverModal').classList.remove('hidden');
+        }
+
+        function cancelHostTakeover() {
+            playSound('click');
+            document.getElementById('hostTakeoverModal').classList.add('hidden');
+        }
+
+        async function confirmHostTakeover() {
+            playSound('click');
+            document.getElementById('hostTakeoverModal').classList.add('hidden');
+
+            console.log('Taking over as host:', {
+                oldHost: currentHost,
+                newHost: myName
+            });
+
+            // Update database with new host and notification
+            const { data, error } = await supabaseClient.from('rooms').update({
+                current_host: myName,
+                host_change_notification: {
+                    newHost: myName,
+                    timestamp: Date.now()
+                }
+            }).eq('room_code', currentRoomCode).select();
+
+            if (error) {
+                console.error('Failed to take over as host:', error);
+                alert('Failed to become host. Error: ' + error.message);
+            } else {
+                console.log('Successfully became host:', data);
+                playSound('meow');
+                if (navigator.vibrate) navigator.vibrate(200);
+            }
+        }
+        
+        // Triggers when the user closes the tab or navigates away
+        window.addEventListener('beforeunload', async () => {
+            if (channel) {
+                await channel.unsubscribe();
+            }
+        });
+
+        function createCatBackground() {
+
+            const bg = document.getElementById('catBackground');
+            const catEmojis = ['🐱', '🐈', '🐾', '😸', '😽', '🧶', '🌈', '🍗', '🥛', '🙀', '😻', '😼', '🌈'];
+            const catCount = 20;
+
+            for (let i = 0; i < catCount; i++) {
+                let cat = document.createElement('div');
+                cat.className = 'falling-cat';
+                cat.innerText = catEmojis[Math.floor(Math.random() * catEmojis.length)];
+                
+                // --- RANDOM ROTATION LOGIC ---
+                // 1. Random starting angle (0 to 360 degrees)
+                const startRotation = Math.floor(Math.random() * 360);
+                
+                // 2. Random rotation speed/direction 
+                // Some will spin fast, some slow, some counter-clockwise
+                const spinSpeed = (Math.random() * 10 + 5); // 5s to 15s per full spin
+                const direction = Math.random() > 0.5 ? '' : '-'; // clockwise or counter
+                
+                // Apply initial styles
+                cat.style.left = Math.random() * 100 + 'vw';
+                cat.style.animationDuration = (Math.random() * 8 + 7) + 's'; // Fall speed
+                cat.style.animationDelay = (Math.random() * 5) + 's';
+                
+                // Apply the rotation via a secondary animation or inline style
+                cat.style.transform = `rotate(${startRotation}deg)`;
+                
+                // Inline-animation for the spinning effect
+                cat.animate([
+                    { transform: `rotate(${startRotation}deg)` },
+                    { transform: `rotate(${startRotation + (360 * (Math.random() > 0.5 ? 1 : -1))}deg)` }
+                ], {
+                    duration: spinSpeed * 1000,
+                    iterations: Infinity,
+                    easing: 'linear'
+                });
+
+                bg.appendChild(cat);
+            }
+        }
+
+        // Run the background creation when the page loads
+        createCatBackground();
+
+        async function startVoting() {
+            if (currentHost !== myName) return;
+            playSound('click');
+
+            allVotesInNotified = false; // Reset notification flag
+
+            console.log('Starting voting, clearing votes array');
+
+            const { data, error } = await supabaseClient.from('rooms').update({
+                voting_active: true,
+                votes: [], // Explicitly clear votes for new round
+                last_elimination: null // Clear previous elimination
+            }).eq('room_code', currentRoomCode).select();
+
+            if (error) {
+                console.error('Start voting error:', error);
+            } else {
+                console.log('Voting started, updated room data:', data);
+            }
+        }
+
+        function updateVoteButtons() {
+            const voteButtonsDiv = document.getElementById('voteButtons');
+            const activePlayers = players.filter(p => !eliminatedPlayers.includes(p) && p !== myName);
+
+            // Check if I've voted in the current votes array
+            const myVote = votes.find(v => v.voter === myName);
+            const hasVoted = !!myVote;
+
+            console.log('UpdateVoteButtons:', {
+                myName,
+                hasVoted,
+                myVoteSubmitted,
+                votesArray: votes,
+                selectedVoteTarget
+            });
+
+            voteButtonsDiv.innerHTML = activePlayers.map(p => {
+                const voteCount = votes.filter(v => v.votedFor === p).length;
+                const isMyConfirmedVote = hasVoted && myVote.votedFor === p;
+                const isSelected = selectedVoteTarget === p;
+
+                let style = 'background-color: #dfe6e9; color: #2d3436;';
+                if (isMyConfirmedVote) {
+                    style = 'background-color: #ff6b6b; border: 3px solid #c23616;';
+                } else if (isSelected) {
+                    style = 'background-color: #ffcccc; color: #2d3436;';
+                }
+
+                // Escape player name for safe HTML attribute
+                const escapedName = p.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const disabled = hasVoted ? 'disabled' : '';
+
+                return `<button onclick="selectVote('${escapedName}')" ${disabled} style="${style} margin: 5px; font-size: 0.85em; ${disabled ? 'opacity: 0.6; cursor: not-allowed;' : ''}">
+                    ${p} ${voteCount > 0 ? `(${voteCount})` : ''}
+                </button>`;
+            }).join('');
+
+            // Check if everyone has voted
+            const activePlayersList = players.filter(p => !eliminatedPlayers.includes(p));
+            // Only count votes from active players
+            const activeVotes = votes.filter(v => !eliminatedPlayers.includes(v.voter));
+            const allVoted = activeVotes.length === activePlayersList.length;
+
+            // Update vote status to show voting progress
+            const voteStatus = document.getElementById('voteStatus');
+            if (allVoted && votingActive) {
+                voteStatus.innerHTML = '<b style="color: #1dd1a1;">✓ All votes in! Waiting for host...</b>';
+
+                // Notify once when all votes are in
+                if (!allVotesInNotified) {
+                    allVotesInNotified = true;
+                    playSound('meow');
+                    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+                    // Make the button pulse for the host
+                    if (currentHost === myName) {
+                        const nextRoundBtn = document.getElementById('nextRoundBtn');
+                        if (nextRoundBtn) nextRoundBtn.style.animation = 'pulse 1s ease-in-out infinite';
+                    }
+                }
+            } else if (votingActive) {
+                voteStatus.innerHTML = `Votes: ${activeVotes.length}/${activePlayersList.length}`;
+            }
+        }
+
+        function selectVote(playerName) {
+            if (myVoteSubmitted) return;
+            playSound('click');
+
+            selectedVoteTarget = playerName;
+            document.getElementById('selectedPlayerName').innerText = playerName;
+            document.getElementById('selectedVote').classList.remove('hidden');
+
+            updateVoteButtons();
+        }
+
+        function cancelVoteSelection() {
+            playSound('click');
+            selectedVoteTarget = null;
+            document.getElementById('selectedVote').classList.add('hidden');
+            updateVoteButtons();
+        }
+
+        async function confirmVote() {
+            if (myVoteSubmitted || !selectedVoteTarget) {
+                console.log('Cannot confirm vote:', { myVoteSubmitted, selectedVoteTarget });
+                return;
+            }
+
+            playSound('click');
+
+            // Update votes array - remove any existing vote from this player and add new one
+            const updatedVotes = votes.filter(v => v.voter !== myName);
+            updatedVotes.push({ voter: myName, votedFor: selectedVoteTarget });
+
+            console.log('Confirming vote:', {
+                myName,
+                votedFor: selectedVoteTarget,
+                previousVotes: votes,
+                updatedVotes: updatedVotes
+            });
+
+            const { data, error } = await supabaseClient.from('rooms').update({ votes: updatedVotes }).eq('room_code', currentRoomCode).select();
+
+            if (error) {
+                alert('Failed to submit vote: ' + error.message);
+                console.error('Submit vote error:', error);
+            } else {
+                console.log('Vote submitted successfully:', data);
+                myVoteSubmitted = true;
+                selectedVoteTarget = null;
+                document.getElementById('selectedVote').classList.add('hidden');
+                document.getElementById('voteStatus').innerText = `✓ Vote confirmed!`;
+            }
+        }
+
+        async function nextRound() {
+            if (currentHost !== myName) return;
+            playSound('click');
+
+            // Check if all players have voted
+            const activeNonEliminatedPlayers = players.filter(p => !eliminatedPlayers.includes(p));
+            const votedPlayers = votes.map(v => v.voter);
+            const playersWhoHaventVoted = activeNonEliminatedPlayers.filter(p => !votedPlayers.includes(p));
+
+            // If not all voted, show confirmation modal
+            if (playersWhoHaventVoted.length > 0) {
+                const modal = document.getElementById('lockVotesModal');
+                const votesCountText = document.getElementById('votesCountText');
+                const missingVotersList = document.getElementById('missingVotersList');
+
+                votesCountText.innerText = `${votes.length} of ${activeNonEliminatedPlayers.length} players have voted.`;
+                missingVotersList.innerHTML = playersWhoHaventVoted.map(p => `<div style="margin: 3px 0;">• ${p}</div>`).join('');
+
+                modal.classList.remove('hidden');
+                return; // Don't proceed yet
+            }
+
+            // All voted, proceed directly
+            proceedWithLockVotes();
+        }
+
+        function cancelLockVotes() {
+            playSound('click');
+            document.getElementById('lockVotesModal').classList.add('hidden');
+        }
+
+        async function confirmLockVotes() {
+            playSound('click');
+            document.getElementById('lockVotesModal').classList.add('hidden');
+            proceedWithLockVotes();
+        }
+
+        async function proceedWithLockVotes() {
+            // Stop button animation
+            const nextRoundBtn = document.getElementById('nextRoundBtn');
+            if (nextRoundBtn) nextRoundBtn.style.animation = '';
+
+            // Calculate elimination based on votes
+            if (votes.length > 0) {
+                const voteCount = {};
+                votes.forEach(v => {
+                    voteCount[v.votedFor] = (voteCount[v.votedFor] || 0) + 1;
+                });
+
+                // Find player(s) with most votes
+                const maxVotes = Math.max(...Object.values(voteCount));
+                const eliminated = Object.keys(voteCount).filter(p => voteCount[p] === maxVotes);
+
+                if (eliminated.length === 1) {
+                    // Single player eliminated
+                    const updatedEliminated = [...eliminatedPlayers, ...eliminated];
+
+                    // Check if eliminated player is Spy Dog
+                    const eliminatedRole = playerRoles[eliminated[0]] || '';
+                    const isSpyDog = eliminatedRole.includes('Spy Dog');
+
+                    // Check if game should end
+                    const activePlayers = players.filter(p => !updatedEliminated.includes(p));
+
+                    // Count roles among active players
+                    let goodKittyCount = 0;
+                    let confusedKittyCount = 0;
+                    let spyDogCount = 0;
+                    activePlayers.forEach(p => {
+                        const role = playerRoles[p] || '';
+                        if (role.includes('Good Kitty')) goodKittyCount++;
+                        else if (role.includes('Confused')) confusedKittyCount++;
+                        else if (role.includes('Spy Dog')) spyDogCount++;
+                    });
+
+                    // Game ends if:
+                    // 1) Only 2 players left, OR
+                    // 2) Confused Kitties >= Good Kitties (and Good Kitties exist), OR
+                    // 3) Only Good Kitties remain (all imposters eliminated), OR
+                    // 4) No Good Kitties remain (imposters won)
+                    const onlyTwoPlayersLeft = activePlayers.length <= 2;
+                    const confusedTakeover = confusedKittyCount >= goodKittyCount && goodKittyCount > 0;
+                    const allImpostersGone = confusedKittyCount === 0 && spyDogCount === 0 && goodKittyCount > 0;
+                    const noGoodKittiesLeft = goodKittyCount === 0 && activePlayers.length > 0;
+                    const gameEnding = onlyTwoPlayersLeft || confusedTakeover || allImpostersGone || noGoodKittiesLeft;
+
+                    // Show elimination result
+                    playSound('meow');
+                    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+                    // Advance to next round (max 5 rounds) if game continues
+                    const nextRoundNum = gameEnding ? currentRound : Math.min(currentRound + 1, 5);
+
+                    allVotesInNotified = false; // Reset for next voting round
+
+                    await supabaseClient.from('rooms').update({
+                        current_round: nextRoundNum,
+                        voting_active: false,
+                        votes: [],
+                        eliminated_players: updatedEliminated,
+                        calling_order: [],
+                        called_players: [],
+                        skipped_players: [],
+                        current_calling_index: 0,
+                        calling_active: false,
+                        last_elimination: {
+                            player: eliminated[0],
+                            votes: maxVotes,
+                            gameEnding: gameEnding,
+                            tie: false,
+                            shown: false,
+                            isSpyDog: isSpyDog,
+                            spyDogGuessed: false
+                        }
+                    }).eq('room_code', currentRoomCode);
+                } else if (eliminated.length === 2) {
+                    // 2-way tie: Both players eliminated
+                    const updatedEliminated = [...eliminatedPlayers, ...eliminated];
+
+                    // Check for ALL eliminated Spy Dogs
+                    const spyDogsEliminated = eliminated.filter(p => {
+                        const role = playerRoles[p] || '';
+                        return role.includes('Spy Dog');
+                    });
+
+                    // Check if game should end
+                    const activePlayers = players.filter(p => !updatedEliminated.includes(p));
+
+                    // Count roles among active players
+                    let goodKittyCount = 0;
+                    let confusedKittyCount = 0;
+                    let spyDogCount = 0;
+                    activePlayers.forEach(p => {
+                        const role = playerRoles[p] || '';
+                        if (role.includes('Good Kitty')) goodKittyCount++;
+                        else if (role.includes('Confused')) confusedKittyCount++;
+                        else if (role.includes('Spy Dog')) spyDogCount++;
+                    });
+
+                    // Game ends if:
+                    // 1) Only 2 players left, OR
+                    // 2) Confused Kitties >= Good Kitties (and Good Kitties exist), OR
+                    // 3) Only Good Kitties remain (all imposters eliminated), OR
+                    // 4) No Good Kitties remain (imposters won)
+                    const onlyTwoPlayersLeft = activePlayers.length <= 2;
+                    const confusedTakeover = confusedKittyCount >= goodKittyCount && goodKittyCount > 0;
+                    const allImpostersGone = confusedKittyCount === 0 && spyDogCount === 0 && goodKittyCount > 0;
+                    const noGoodKittiesLeft = goodKittyCount === 0 && activePlayers.length > 0;
+                    const gameEnding = onlyTwoPlayersLeft || confusedTakeover || allImpostersGone || noGoodKittiesLeft;
+
+                    // Show elimination result
+                    playSound('meow');
+                    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+                    // Advance to next round (max 5 rounds) if game continues
+                    const nextRoundNum = gameEnding ? currentRound : Math.min(currentRound + 1, 5);
+
+                    allVotesInNotified = false; // Reset for next voting round
+
+                    await supabaseClient.from('rooms').update({
+                        current_round: nextRoundNum,
+                        voting_active: false,
+                        votes: [],
+                        eliminated_players: updatedEliminated,
+                        calling_order: [],
+                        called_players: [],
+                        skipped_players: [],
+                        current_calling_index: 0,
+                        calling_active: false,
+                        last_elimination: {
+                            player: eliminated.join(' & '),
+                            votes: maxVotes,
+                            gameEnding: gameEnding,
+                            tie: true,
+                            shown: false,
+                            spyDogs: spyDogsEliminated,
+                            spyDogGuesses: [],
+                            allSpyDogsGuessed: false
+                        }
+                    }).eq('room_code', currentRoomCode);
+                } else {
+                    // 3+ way tie: Revote needed
+                    alert(`${eliminated.length}-way tie between: ${eliminated.join(', ')}. Revote needed!`);
+                    allVotesInNotified = false; // Reset for next voting round
+                    await supabaseClient.from('rooms').update({
+                        votes: [], // Clear votes but keep voting active
+                        last_elimination: null,
+                        calling_order: [],
+                        called_players: [],
+                        skipped_players: [],
+                        current_calling_index: 0,
+                        calling_active: false
+                    }).eq('room_code', currentRoomCode);
+                }
+            } else {
+                alert('No votes cast!');
+                allVotesInNotified = false; // Reset for next voting round
+                await supabaseClient.from('rooms').update({
+                    voting_active: false
+                }).eq('room_code', currentRoomCode);
+            }
+        }
+
+        async function nextGame() {
+            if (currentHost !== myName) return;
+            playSound('click');
+
+            // Set flag to show game summary to all players
+            await supabaseClient.from('rooms').update({
+                show_game_summary: true
+            }).eq('room_code', currentRoomCode);
+        }
+
+        async function showGameSummary(secretData, trueSecret) {
+            playSound('meow');
+
+            // Check for winners
+            const { data: roomData } = await supabaseClient
+                .from('rooms')
+                .select('last_elimination')
+                .eq('room_code', currentRoomCode)
+                .single();
+
+            const spyDogWinner = roomData?.last_elimination?.spyDogWinner || null;
+            const spyDogGuessCorrect = roomData?.last_elimination?.spyDogGuessCorrect || false;
+            const spyDogGuesses = roomData?.last_elimination?.spyDogGuesses || [];
+
+            // Check for spy dog winners from guesses array
+            const spyDogWinners = spyDogGuesses.filter(g => g.correct).map(g => g.player);
+            if (spyDogGuessCorrect && spyDogWinner) {
+                spyDogWinners.push(spyDogWinner);
+            }
+
+            // Determine winners based on game state
+            let winnersHTML = '';
+            const activePlayers = players.filter(p => !eliminatedPlayers.includes(p));
+
+            // Count role types in survivors
+            let goodKittyCount = 0, confusedKittyCount = 0, spyDogCount = 0;
+            activePlayers.forEach(p => {
+                const role = playerRoles[p] || '';
+                if (role.includes('Good Kitty')) goodKittyCount++;
+                else if (role.includes('Confused')) confusedKittyCount++;
+                else if (role.includes('Spy Dog')) spyDogCount++;
+            });
+
+            const allWinners = [];
+
+            // Add spy dog winners first (if any guessed correctly)
+            spyDogWinners.forEach(name => {
+                allWinners.push(`🐶 ${name} (Spy Dog - Guessed Correctly!)`);
+            });
+
+            // Determine other winners based on ending condition
+            if (goodKittyCount === 0) {
+                // No Good Kitties remain - all survivors win
+                activePlayers.forEach(p => {
+                    const role = playerRoles[p] || '';
+                    if (role.includes('Confused')) {
+                        allWinners.push(`❓ ${p} (Confused Kitty - Eliminated All Good Kitties!)`);
+                    } else if (role.includes('Spy Dog')) {
+                        allWinners.push(`🐶 ${p} (Spy Dog - Eliminated All Good Kitties!)`);
+                    }
+                });
+            } else if (activePlayers.length <= 2) {
+                // 2 or fewer players - check if any are imposters
+                const hasImposters = confusedKittyCount > 0 || spyDogCount > 0;
+                if (hasImposters) {
+                    // Imposters win
+                    activePlayers.forEach(p => {
+                        const role = playerRoles[p] || '';
+                        if (role.includes('Confused')) {
+                            allWinners.push(`❓ ${p} (Confused Kitty - Survived!)`);
+                        } else if (role.includes('Spy Dog')) {
+                            allWinners.push(`🐶 ${p} (Spy Dog - Survived!)`);
+                        }
+                    });
+                } else {
+                    // All Good Kitties win
+                    activePlayers.forEach(p => {
+                        allWinners.push(`🐱 ${p} (Good Kitty - Survived!)`);
+                    });
+                }
+            } else if (confusedKittyCount === 0 && spyDogCount === 0) {
+                // All imposters eliminated - Good Kitties win
+                activePlayers.forEach(p => {
+                    const role = playerRoles[p] || '';
+                    if (role.includes('Good Kitty')) {
+                        allWinners.push(`🐱 ${p} (Good Kitty - Eliminated Imposters!)`);
+                    }
+                });
+            } else if (confusedKittyCount >= goodKittyCount) {
+                // Confused Kitty takeover - Confused Kitties win
+                activePlayers.forEach(p => {
+                    const role = playerRoles[p] || '';
+                    if (role.includes('Confused')) {
+                        allWinners.push(`❓ ${p} (Confused Kitty - Takeover!)`);
+                    }
+                });
+            }
+
+            if (allWinners.length > 0) {
+                winnersHTML = `
+                    <div style="background: #d4f4dd; padding: 12px; border-radius: 10px; margin-bottom: 15px; text-align: center; border: 2px solid #1dd1a1;">
+                        <div style="font-size: 1.1em; font-weight: bold; color: #1dd1a1; margin-bottom: 8px;">🏆 WINNERS 🏆</div>
+                        ${allWinners.map(w => `<div style="font-size: 0.95em; margin: 3px 0; font-weight: bold;">${w}</div>`).join('')}
+                    </div>
+                `;
+            }
+
+            const summaryHTML = `
+                <div style="text-align: left; margin: 15px 0;">
+                    ${winnersHTML}
+                    <div style="background: #fffde7; padding: 10px; border-radius: 10px; margin-bottom: 15px; text-align: center;">
+                        <div style="font-size: 0.9em; color: #636e72;">Good Kitty Word:</div>
+                        <div style="font-size: 1.4em; font-weight: bold; color: #ff9f43;">${trueSecret.goodWord}</div>
+                    </div>
+                    <div style="font-size: 0.9em; font-weight: bold; margin-bottom: 10px; color: #636e72;">PLAYERS & ROLES:</div>
+                    ${secretData.map(p => {
+                        const roleColor = p.role.includes('Good Kitty') ? '#1dd1a1' :
+                                         p.role.includes('Confused') ? '#ff9f43' : '#ee5a6f';
+                        return `
+                            <div style="background: #f9f9f9; padding: 8px; border-radius: 8px; margin: 5px 0; border-left: 4px solid ${roleColor};">
+                                <div style="font-weight: bold;">${p.name}</div>
+                                <div style="font-size: 0.85em; color: ${roleColor};">${p.role}</div>
+                                <div style="font-size: 0.85em; color: #636e72;">${p.secret}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            document.getElementById('gameSummaryContent').innerHTML = summaryHTML;
+            document.getElementById('gameEndModal').classList.remove('hidden');
+        }
+
+        async function closeGameEndModal() {
+            playSound('click');
+            document.getElementById('gameEndModal').classList.add('hidden');
+
+            // Only host actually starts the new game
+            if (currentHost === myName) {
+                await startGame();
+            }
+        }
+        function showSecret() {
+            playSound('meow');
+            const el = document.getElementById('secretWordDisplay');
+            el.innerText = mySecret;
+            el.style.visibility = 'visible';
+            el.classList.add('reveal-animation');
+            setTimeout(() => el.classList.remove('reveal-animation'), 500);
+        }
+        function hideSecret() {
+            const el = document.getElementById('secretWordDisplay');
+            el.style.visibility = 'hidden';
+            el.classList.remove('reveal-animation');
+        }
+
+        function showExitConfirm() {
+            playSound('click');
+            document.getElementById('exitRoomConfirmArea').classList.remove('hidden');
+            document.getElementById('exitRoomBtn').classList.add('hidden');
+        }
+
+        function cancelExitRoom() {
+            playSound('click');
+            document.getElementById('exitRoomConfirmArea').classList.add('hidden');
+            document.getElementById('exitRoomBtn').classList.remove('hidden');
+        }
+
+        async function confirmExitRoom() {
+            playSound('click');
+            if (channel) await supabaseClient.removeChannel(channel);
+            location.reload();
+        }
+
+        let currentEliminationData = null;
+
+        function showEliminationModal(elimination) {
+            playSound('meow');
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+            // Store elimination data for later use
+            currentEliminationData = elimination;
+
+            // Get role emoji
+            const player = elimination.player;
+            const role = playerRoles[player] || '';
+            let roleDisplay = '';
+            if (role) {
+                let roleEmoji = '';
+                if (role.includes('Good Kitty')) roleEmoji = '🐱';
+                else if (role.includes('Confused')) roleEmoji = '❓';
+                else if (role.includes('Spy Dog')) roleEmoji = '🐶';
+                roleDisplay = `${roleEmoji} ${role}`;
+            }
+
+            document.getElementById('eliminatedPlayerName').innerText = player;
+            document.getElementById('eliminatedPlayerRole').innerText = roleDisplay;
+            document.getElementById('eliminationVotes').innerText = `Eliminated with ${elimination.votes} vote(s)${elimination.gameEnding ? ' • Game Ending!' : ''}`;
+
+            // Show true word immediately for Good Kitties and Confused Kitties
+            const isSelf = player === myName || (elimination.tie && elimination.player.includes(myName));
+            if (isSelf && role && !role.includes('Spy Dog')) {
+                document.getElementById('trueSecretWord').innerText = localTrueSecret?.goodWord || '';
+                document.getElementById('trueSecretDisplay').classList.remove('hidden');
+            }
+
+            document.getElementById('eliminationModal').classList.remove('hidden');
+        }
+
+        async function closeEliminationModal() {
+            playSound('click');
+            document.getElementById('eliminationModal').classList.add('hidden');
+
+            const isSpyDogEliminated = currentEliminationData?.isSpyDog || false;
+            const spyDogs = currentEliminationData?.spyDogs || [];
+            const spyDogName = currentEliminationData?.spyDogName || currentEliminationData?.player;
+            const isGameEnding = currentEliminationData?.gameEnding || false;
+            const isHost = currentHost === myName;
+
+            // Handle single spy dog elimination
+            const isSingleSpyDog = isSpyDogEliminated && myName === spyDogName;
+
+            // Handle multiple spy dogs in tie
+            const isMultipleSpyDogs = spyDogs.length > 0 && spyDogs.includes(myName);
+
+            // Mark elimination as shown in database (host only)
+            if (isHost && currentRoomCode) {
+                const { data: roomData } = await supabaseClient
+                    .from('rooms')
+                    .select('last_elimination')
+                    .eq('room_code', currentRoomCode)
+                    .single();
+
+                if (roomData?.last_elimination) {
+                    await supabaseClient.from('rooms').update({
+                        last_elimination: { ...roomData.last_elimination, shown: true }
+                    }).eq('room_code', currentRoomCode);
+                }
+            }
+
+            // Check if Spy Dog(s) need to guess
+            if (isSingleSpyDog && !currentEliminationData?.spyDogGuessed) {
+                showSpyDogGuessModal(spyDogName, false);
+            } else if (isMultipleSpyDogs && !currentEliminationData?.allSpyDogsGuessed) {
+                // Get next spy dog to guess
+                const guesses = currentEliminationData?.spyDogGuesses || [];
+                const hasGuessed = guesses.find(g => g.player === myName);
+                if (!hasGuessed) {
+                    const isLastSpyDog = guesses.length === spyDogs.length - 1;
+                    showSpyDogGuessModal(myName, isLastSpyDog);
+                }
+            } else if (isHost) {
+                // Automatically proceed based on game state
+                if (isGameEnding) {
+                    // Game is ending - show summary and start next game
+                    await nextGame();
+                }
+                // If not ending, game already advanced to next round via nextRound() function
+            }
+
+            if (!isSingleSpyDog && !isMultipleSpyDogs) {
+                currentEliminationData = null;
+            }
+        }
+
+        function showSpyDogGuessModal(spyDogName, isLastInSequence) {
+            playSound('meow');
+            document.getElementById('spyDogName').innerText = spyDogName;
+            document.getElementById('spyDogGuessInput').value = '';
+            document.getElementById('spyDogGuessModal').classList.remove('hidden');
+            document.getElementById('spyDogGuessModal').setAttribute('data-last', isLastInSequence);
+        }
+
+        async function submitSpyDogGuess() {
+            const guess = document.getElementById('spyDogGuessInput').value.trim();
+            if (!guess) {
+                alert('Please enter a guess!');
+                return;
+            }
+
+            playSound('click');
+
+            // Check if guess is correct
+            const trueWord = localTrueSecret?.goodWord || '';
+            const isCorrect = guess.toLowerCase() === trueWord.split(' ').slice(1).join(' ').toLowerCase();
+
+            // Show result with true word
+            if (isCorrect) {
+                alert(`🎉 Correct! The word was: ${trueWord}\n\nYou win as Spy Dog!`);
+            } else {
+                alert(`❌ Wrong! The word was: ${trueWord}`);
+            }
+
+            // Show true word for eliminated spy dog
+            document.getElementById('trueSecretWord').innerText = trueWord;
+            document.getElementById('trueSecretDisplay').classList.remove('hidden');
+
+            const isHost = currentHost === myName;
+            const spyDogs = currentEliminationData?.spyDogs || [];
+            const isTieScenario = spyDogs.length > 0;
+
+            // Mark guess as submitted
+            if (currentRoomCode) {
+                const { data: roomData } = await supabaseClient
+                    .from('rooms')
+                    .select('last_elimination')
+                    .eq('room_code', currentRoomCode)
+                    .single();
+
+                if (roomData?.last_elimination) {
+                    const updatedElimination = { ...roomData.last_elimination };
+
+                    if (isTieScenario) {
+                        // Multiple spy dogs scenario
+                        const guesses = updatedElimination.spyDogGuesses || [];
+                        guesses.push({ player: myName, correct: isCorrect });
+                        updatedElimination.spyDogGuesses = guesses;
+                        updatedElimination.allSpyDogsGuessed = guesses.length === spyDogs.length;
+
+                        // If anyone guessed correctly, end game immediately
+                        if (isCorrect) {
+                            updatedElimination.gameEnding = true;
+                            updatedElimination.spyDogWinner = myName;
+                        }
+                    } else {
+                        // Single spy dog scenario
+                        updatedElimination.spyDogGuessed = true;
+                        updatedElimination.spyDogGuessCorrect = isCorrect;
+                        if (isCorrect) {
+                            updatedElimination.gameEnding = true;
+                            updatedElimination.spyDogWinner = myName;
+                        }
+                    }
+
+                    await supabaseClient.from('rooms').update({
+                        last_elimination: updatedElimination
+                    }).eq('room_code', currentRoomCode);
+                }
+            }
+
+            document.getElementById('spyDogGuessModal').classList.add('hidden');
+
+            // If guess correct, end game immediately
+            if (isCorrect && isHost) {
+                await nextGame();
+            }
+
+            currentEliminationData = null;
+        }
+
+        async function skipSpyDogGuess() {
+            playSound('click');
+
+            const trueWord = localTrueSecret?.goodWord || '';
+            alert(`You skipped. The word was: ${trueWord}`);
+
+            // Show true word
+            document.getElementById('trueSecretWord').innerText = trueWord;
+            document.getElementById('trueSecretDisplay').classList.remove('hidden');
+
+            const spyDogs = currentEliminationData?.spyDogs || [];
+            const isTieScenario = spyDogs.length > 0;
+
+            // Mark as guessed (wrong)
+            if (currentRoomCode) {
+                const { data: roomData } = await supabaseClient
+                    .from('rooms')
+                    .select('last_elimination')
+                    .eq('room_code', currentRoomCode)
+                    .single();
+
+                if (roomData?.last_elimination) {
+                    const updatedElimination = { ...roomData.last_elimination };
+
+                    if (isTieScenario) {
+                        const guesses = updatedElimination.spyDogGuesses || [];
+                        guesses.push({ player: myName, correct: false });
+                        updatedElimination.spyDogGuesses = guesses;
+                        updatedElimination.allSpyDogsGuessed = guesses.length === spyDogs.length;
+                    } else {
+                        updatedElimination.spyDogGuessed = true;
+                        updatedElimination.spyDogGuessCorrect = false;
+                    }
+
+                    await supabaseClient.from('rooms').update({
+                        last_elimination: updatedElimination
+                    }).eq('room_code', currentRoomCode);
+                }
+            }
+
+            document.getElementById('spyDogGuessModal').classList.add('hidden');
+            currentEliminationData = null;
+        }
+
+        async function deleteRoom() { if(confirm("Delete room?")) { await supabaseClient.from('rooms').delete().eq('room_code', currentRoomCode); location.reload(); } }
+
+        function updateCallingDisplay() {
+            const callingStatusDiv = document.getElementById('callingStatus');
+            const playerGreeting = document.getElementById('playerGreeting');
+            const skipBtn = document.getElementById('skipCallingBtn');
+            const currentPlayerCallingDiv = document.getElementById('currentPlayerCalling');
+
+            if (!advancedHostingEnabled || votingActive) {
+                callingStatusDiv.classList.add('hidden');
+                if (votingActive) {
+                    playerGreeting.innerText = `${myName}, please vote!`;
+                } else {
+                    playerGreeting.innerText = `Hello, ${myName}!`;
+                }
+                playerGreeting.classList.remove('hidden');
+                return;
+            }
+
+            // Check if current player is being called
+            const activeNonEliminatedPlayers = players.filter(p => !eliminatedPlayers.includes(p));
+            const allCalled = activeNonEliminatedPlayers.every(p =>
+                calledPlayers.includes(p) || skippedPlayers.includes(p)
+            );
+
+            const currentPlayerBeingCalled = callingOrder[currentCallingIndex];
+            const isMeCalled = calledPlayers.includes(myName);
+            const isMeSkipped = skippedPlayers.includes(myName);
+            const isCurrentlyCalling = currentPlayerBeingCalled && !calledPlayers.includes(currentPlayerBeingCalled) && !skippedPlayers.includes(currentPlayerBeingCalled);
+
+            // Update player greeting/status display for ALL players
+            if (allCalled && callingActive) {
+                // All players called
+                playerGreeting.classList.add('hidden');
+                callingStatusDiv.classList.remove('hidden');
+                callingStatusDiv.innerText = "All players called";
+                callingStatusDiv.style.background = '#d4f4dd';
+                callingStatusDiv.style.borderColor = '#1dd1a1';
+                callingStatusDiv.style.color = '#155724';
+            } else if (isMeSkipped) {
+                // I was skipped
+                playerGreeting.classList.add('hidden');
+                callingStatusDiv.classList.remove('hidden');
+                callingStatusDiv.innerText = `${myName}, you were skipped`;
+                callingStatusDiv.style.background = '#ffe0e6';
+                callingStatusDiv.style.borderColor = '#ee5a6f';
+                callingStatusDiv.style.color = '#721c24';
+            } else if (currentPlayerBeingCalled && isCurrentlyCalling && callingActive) {
+                // Show who's being called (for everyone)
+                playerGreeting.classList.add('hidden');
+                callingStatusDiv.classList.remove('hidden');
+                if (currentPlayerBeingCalled === myName) {
+                    // YOU are being called - make it obvious!
+                    callingStatusDiv.innerText = `🔔 ${myName}, you are being called!`;
+                    callingStatusDiv.style.background = '#ff9800';
+                    callingStatusDiv.style.borderColor = '#f57c00';
+                    callingStatusDiv.style.color = 'white';
+                    callingStatusDiv.style.fontSize = '1.2em';
+                    callingStatusDiv.style.animation = 'callPulse 1s ease-in-out infinite';
+                    callingStatusDiv.style.boxShadow = '0 4px 15px rgba(255, 152, 0, 0.5)';
+
+                    // Play notification sound only when first being called (not on every update)
+                    if (lastCalledPlayer !== myName) {
+                        playSound('called');
+                        if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+                        lastCalledPlayer = myName;
+                    }
+                } else {
+                    callingStatusDiv.innerText = `${currentPlayerBeingCalled} is being called`;
+                    callingStatusDiv.style.background = '#fff3cd';
+                    callingStatusDiv.style.borderColor = '#ffc107';
+                    callingStatusDiv.style.color = '#856404';
+                    callingStatusDiv.style.fontSize = '1em';
+                    callingStatusDiv.style.animation = '';
+                    callingStatusDiv.style.boxShadow = '';
+                }
+            } else if (callingActive) {
+                // Calling started but waiting
+                playerGreeting.classList.add('hidden');
+                callingStatusDiv.classList.remove('hidden');
+                callingStatusDiv.innerText = "Waiting for next player...";
+                callingStatusDiv.style.background = '#e3f2fd';
+                callingStatusDiv.style.borderColor = '#2196F3';
+                callingStatusDiv.style.color = '#0d47a1';
+            } else {
+                // Not started yet
+                playerGreeting.innerText = `Hello, ${myName}!`;
+                playerGreeting.classList.remove('hidden');
+                callingStatusDiv.classList.add('hidden');
+            }
+
+            // Update host calling controls
+            const startCallingBtn = document.getElementById('startCallingBtn');
+            const restartRoundBtn = document.getElementById('restartRoundBtn');
+
+            if (currentHost === myName && startCallingBtn) {
+                if (allCalled) {
+                    // All called - hide all buttons
+                    startCallingBtn.classList.add('hidden');
+                    startCallingBtn.style.animation = '';
+                    skipBtn.classList.add('hidden');
+                    restartRoundBtn.classList.add('hidden');
+                    currentPlayerCallingDiv.innerText = '✓ All players have been called';
+                    currentPlayerCallingDiv.style.background = '#d4f4dd';
+                    currentPlayerCallingDiv.style.borderColor = '#1dd1a1';
+                } else if (!callingActive || callingOrder.length === 0) {
+                    // Not started - show start button only with pulse animation
+                    startCallingBtn.classList.remove('hidden');
+                    startCallingBtn.style.animation = 'pulse 2s ease-in-out infinite';
+                    skipBtn.classList.add('hidden');
+                    restartRoundBtn.classList.add('hidden');
+                    currentPlayerCallingDiv.innerText = 'Click "Start Calling" to begin';
+                    currentPlayerCallingDiv.style.background = '#e3f2fd';
+                    currentPlayerCallingDiv.style.borderColor = '#48dbfb';
+                } else if (isCurrentlyCalling && currentPlayerBeingCalled) {
+                    // In progress - hide start, show skip and restart
+                    startCallingBtn.classList.add('hidden');
+                    startCallingBtn.style.animation = '';
+                    skipBtn.classList.remove('hidden');
+                    restartRoundBtn.classList.remove('hidden');
+                    currentPlayerCallingDiv.innerText = `📞 Calling: ${currentPlayerBeingCalled}`;
+                    currentPlayerCallingDiv.style.background = '#fff3cd';
+                    currentPlayerCallingDiv.style.borderColor = '#ffc107';
+                } else {
+                    // Fallback - show restart
+                    startCallingBtn.classList.add('hidden');
+                    startCallingBtn.style.animation = '';
+                    skipBtn.classList.add('hidden');
+                    restartRoundBtn.classList.remove('hidden');
+                    currentPlayerCallingDiv.innerText = 'Error - click restart to reset';
+                    currentPlayerCallingDiv.style.background = '#ffe0e6';
+                    currentPlayerCallingDiv.style.borderColor = '#ee5a6f';
+
+                    console.log('Error state - calling data:', {
+                        callingActive,
+                        callingOrder,
+                        currentCallingIndex,
+                        currentPlayerBeingCalled,
+                        isCurrentlyCalling,
+                        allCalled
+                    });
+                }
+            }
+        }
+
+        async function nextPlayerCall() {
+            if (currentHost !== myName) return;
+            playSound('click');
+
+            const activeNonEliminatedPlayers = players.filter(p => !eliminatedPlayers.includes(p));
+
+            console.log('nextPlayerCall - Current state:', {
+                callingActive,
+                callingOrderLength: callingOrder.length,
+                activeNonEliminatedPlayers
+            });
+
+            // Reset if corrupted or initialize if not started
+            if (!callingActive || callingOrder.length === 0 ||
+                !Array.isArray(callingOrder) || callingOrder.some(p => !p)) {
+
+                console.log('Resetting/Initializing calling order');
+
+                const newCallingOrder = [...activeNonEliminatedPlayers];
+
+                console.log('New calling order:', newCallingOrder);
+
+                const { data, error } = await supabaseClient.from('rooms').update({
+                    calling_order: newCallingOrder,
+                    called_players: [],
+                    skipped_players: [],
+                    current_calling_index: 0,
+                    calling_active: true
+                }).eq('room_code', currentRoomCode).select();
+
+                console.log('Database update result:', { data, error });
+
+                if (error) {
+                    console.error('Failed to initialize calling:', error);
+                    alert('Failed to start calling. Check console for details.');
+                }
+                return;
+            }
+
+            // Find next player to call (skip already called/skipped)
+            let nextIndex = currentCallingIndex;
+            let found = false;
+            let searchCount = 0;
+
+            console.log('Current state:', {
+                callingOrder,
+                currentCallingIndex,
+                calledPlayers,
+                skippedPlayers,
+                eliminatedPlayers
+            });
+
+            while (searchCount < callingOrder.length) {
+                const player = callingOrder[nextIndex];
+                console.log('Checking player:', player, 'at index:', nextIndex);
+
+                if (player && !calledPlayers.includes(player) && !skippedPlayers.includes(player) &&
+                    !eliminatedPlayers.includes(player)) {
+                    found = true;
+                    break;
+                }
+                nextIndex = (nextIndex + 1) % callingOrder.length;
+                searchCount++;
+            }
+
+            if (!found) {
+                // All players called
+                console.log('All players called');
+                await supabaseClient.from('rooms').update({
+                    calling_active: true,
+                    current_calling_index: callingOrder.length
+                }).eq('room_code', currentRoomCode);
+                return;
+            }
+
+            // Mark current player as called and advance index
+            const currentPlayer = callingOrder[nextIndex];
+            const updatedCalledPlayers = [...calledPlayers, currentPlayer];
+            const nextIndexPosition = (nextIndex + 1) % callingOrder.length;
+
+            console.log('Calling player:', currentPlayer, 'Next index will be:', nextIndexPosition);
+
+            await supabaseClient.from('rooms').update({
+                called_players: updatedCalledPlayers,
+                current_calling_index: nextIndexPosition,
+                calling_active: true
+            }).eq('room_code', currentRoomCode);
+        }
+
+        function skipPlayerCall() {
+            if (currentHost !== myName) return;
+            playSound('click');
+
+            const currentPlayer = callingOrder[currentCallingIndex];
+
+            if (!currentPlayer) {
+                console.error('No current player to skip!');
+                return;
+            }
+
+            // Show confirmation modal
+            document.getElementById('skipPlayerName').innerText = currentPlayer;
+            document.getElementById('skipPlayerModal').classList.remove('hidden');
+        }
+
+        function cancelSkipPlayer() {
+            playSound('click');
+            document.getElementById('skipPlayerModal').classList.add('hidden');
+        }
+
+        async function confirmSkipPlayer() {
+            if (currentHost !== myName) return;
+            playSound('click');
+            document.getElementById('skipPlayerModal').classList.add('hidden');
+
+            const currentPlayer = callingOrder[currentCallingIndex];
+
+            console.log('Confirming skip for player:', currentPlayer);
+
+            if (!currentPlayer) {
+                console.error('No current player to skip!');
+                return;
+            }
+
+            // Add current player to skipped list
+            const updatedSkippedPlayers = [...skippedPlayers, currentPlayer];
+
+            // Mark as "called" too so they won't be called again
+            const updatedCalledPlayers = [...calledPlayers, currentPlayer];
+
+            // Move to next index
+            const nextIndex = (currentCallingIndex + 1) % callingOrder.length;
+
+            console.log('Skipping player:', {
+                currentPlayer,
+                currentIndex: currentCallingIndex,
+                nextIndex,
+                updatedSkippedPlayers,
+                updatedCalledPlayers
+            });
+
+            // Update database with skip and advance to next player
+            await supabaseClient.from('rooms').update({
+                skipped_players: updatedSkippedPlayers,
+                called_players: updatedCalledPlayers,
+                current_calling_index: nextIndex
+            }).eq('room_code', currentRoomCode);
+        }
+
+        // Start calling players (just calls nextPlayerCall to initialize)
+        async function startCallingPlayers() {
+            if (currentHost !== myName) return;
+            playSound('click');
+            await nextPlayerCall();
+        }
+
+        // Request to restart the calling round
+        function requestRestartRound() {
+            if (currentHost !== myName) return;
+            playSound('click');
+            document.getElementById('restartRoundModal').classList.remove('hidden');
+        }
+
+        function cancelRestartRound() {
+            playSound('click');
+            document.getElementById('restartRoundModal').classList.add('hidden');
+        }
+
+        async function confirmRestartRound() {
+            if (currentHost !== myName) return;
+            playSound('click');
+            document.getElementById('restartRoundModal').classList.add('hidden');
+
+            const activeNonEliminatedPlayers = players.filter(p => !eliminatedPlayers.includes(p));
+
+            console.log('Restarting round - resetting calling state and clues');
+
+            // Clear clues for the current round
+            const updatedAllClues = [...allClues];
+            if (updatedAllClues.length >= currentRound) {
+                updatedAllClues[currentRound - 1] = []; // Clear current round's clues
+            }
+
+            // Reset calling state and clear current round clues
+            await supabaseClient.from('rooms').update({
+                calling_order: activeNonEliminatedPlayers,
+                called_players: [],
+                skipped_players: [],
+                current_calling_index: 0,
+                calling_active: false,
+                all_clues: updatedAllClues
+            }).eq('room_code', currentRoomCode);
+        }
+
+    </script>
+</body>
+</html>
