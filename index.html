@@ -1352,10 +1352,13 @@
                 showEliminationModal(roomData.last_elimination);
             }
 
-            // Show game summary if host triggered it
+            // Show game summary if host triggered it (but only if elimination modal is not open)
             if (roomData.show_game_summary && roomData.secret_data && roomData.true_secret) {
-                const modal = document.getElementById('gameEndModal');
-                if (modal.classList.contains('hidden')) {
+                const gameEndModal = document.getElementById('gameEndModal');
+                const eliminationModal = document.getElementById('eliminationModal');
+                const isEliminationModalOpen = !eliminationModal.classList.contains('hidden');
+
+                if (gameEndModal.classList.contains('hidden') && !isEliminationModalOpen) {
                     showGameSummary(roomData.secret_data, roomData.true_secret);
                 }
             }
@@ -2375,6 +2378,22 @@
             if (!isSingleSpyDog && !isMultipleSpyDogs) {
                 currentEliminationData = null;
             }
+
+            // Check if game summary should be shown now that elimination modal is closed
+            setTimeout(async () => {
+                const { data: roomData } = await supabaseClient
+                    .from('rooms')
+                    .select('show_game_summary, secret_data, true_secret')
+                    .eq('room_code', currentRoomCode)
+                    .single();
+
+                if (roomData?.show_game_summary && roomData.secret_data && roomData.true_secret) {
+                    const gameEndModal = document.getElementById('gameEndModal');
+                    if (gameEndModal.classList.contains('hidden')) {
+                        showGameSummary(roomData.secret_data, roomData.true_secret);
+                    }
+                }
+            }, 100);
         }
 
         function showSpyDogGuessModal(spyDogName, isLastInSequence) {
