@@ -38,9 +38,9 @@
                             <input type="checkbox" id="musicCheckbox" style="width: auto; margin: 0;" onchange="toggleMusicFromSettings()">
                         </label>
                         <div style="margin-top: 8px;">
-                            <input type="range" id="volumeSlider" min="0" max="100" value="30" style="width: 100%; margin: 0;" oninput="updateMusicVolume(this.value)">
+                            <input type="range" id="volumeSlider" min="0" max="100" value="15" style="width: 100%; margin: 0;" oninput="updateMusicVolume(this.value)">
                             <div style="font-size: 0.75em; color: #636e72; text-align: center; margin-top: 3px;">
-                                Volume: <span id="volumeLabel">30</span>%
+                                Volume: <span id="volumeLabel">15</span>%
                             </div>
                         </div>
                         <div style="margin-top: 8px;">
@@ -412,7 +412,7 @@
 
         // Music system
         let musicEnabled = localStorage.getItem('musicEnabled') !== 'false'; // Default to true
-        let musicVolume = parseInt(localStorage.getItem('musicVolume') || '30');
+        let musicVolume = parseInt(localStorage.getItem('musicVolume') || '15');
         let musicLoop = localStorage.getItem('musicLoop') === 'true'; // Default to false (play once)
         let bgMusicElement = null;
 
