@@ -765,13 +765,13 @@
         function flipPlayerCard(playerName) {
             playSound('click');
 
-            // Find the card element
+            // Find the card element using exact match on data attribute
             const cards = document.querySelectorAll('.player-card');
             let targetCard = null;
 
             cards.forEach(card => {
-                const frontText = card.querySelector('.player-card-front .player-tag');
-                if (frontText && frontText.textContent.includes(playerName)) {
+                const cardPlayerName = card.getAttribute('data-player-name');
+                if (cardPlayerName === playerName) {
                     targetCard = card;
                 }
             });
@@ -1048,7 +1048,7 @@
                 const escapedName = p.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                 return `<div class="player-container">
-                    <div class="player-card ${hasClues ? 'clickable' : ''}" onclick="${hasClues ? `flipPlayerCard('${escapedName}')` : ''}">
+                    <div class="player-card ${hasClues ? 'clickable' : ''}" data-player-name="${escapedName}" onclick="${hasClues ? `flipPlayerCard('${escapedName}')` : ''}">
                         <div class="player-card-inner">
                             <div class="player-card-front">
                                 <span class="player-tag ${hasRevealed} ${clueSubmittedClass}" style="position: relative; ${isMe}${eliminatedStyle}">
